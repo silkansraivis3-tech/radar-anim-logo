@@ -2,163 +2,304 @@
 // CANVAS
 // ======================================================
 
-const canvas = document.getElementById("radarCanvas");
-const ctx = canvas.getContext("2d");
+const canvas =
+    document.getElementById(
+        "radarCanvas"
+    );
+
+const ctx =
+    canvas.getContext(
+        "2d"
+    );
+
+
+// ======================================================
+// UI ELEMENTI
+// ======================================================
+
+const sessionPanel =
+    document.getElementById(
+        "sessionPanel"
+    );
+
+const sessionCodeInput =
+    document.getElementById(
+        "sessionCodeInput"
+    );
+
+const enterButton =
+    document.getElementById(
+        "enterButton"
+    );
+
+const sessionStatus =
+    document.getElementById(
+        "sessionStatus"
+    );
+
+const sessionStatusSub =
+    document.getElementById(
+        "sessionStatusSub"
+    );
+
+const transitionRing =
+    document.getElementById(
+        "transitionRing"
+    );
+
+const courseScreen =
+    document.getElementById(
+        "courseScreen"
+    );
+
+const activeSessionBadge =
+    document.getElementById(
+        "activeSessionBadge"
+    );
+
+const resetDemoButton =
+    document.getElementById(
+        "resetDemoButton"
+    );
+
+
+// ======================================================
+// DEMO SESSION
+// ======================================================
+
+// Šis pagaidām ir mūsu fake instructor code.
+//
+// Vēlāk šeit nebūs hard-coded vērtība.
+// Android/native/backend noteiks, vai session ir derīga.
+const DEMO_SESSION_CODE =
+    "482731";
 
 
 // ======================================================
 // ATTĒLI
 // ======================================================
 
-// Augšējais attēls / logo.
-const topImage = new Image();
-topImage.src = "./assets/logo_navy.png";
+// Augšējais NOVIKONTAS logo.
+const topImage =
+    new Image();
+
+topImage.src =
+    "./assets/logo_navy.png";
+
 
 // Apakšējais attēls.
-// Ja fails saucas citādi, nomaini tikai šo rindu.
-const bottomImage = new Image();
-bottomImage.src = "./assets/logo_navy.png";
+const bottomImage =
+    new Image();
+
+bottomImage.src =
+    "./assets/logo_navy.png";
 
 
 // ======================================================
 // RADARA IESTATĪJUMI
 // ======================================================
 
-// Needle sākuma leņķis.
-let sweepAngle = 0;
+let sweepAngle =
+    0;
 
-// Needle kustības ātrums.
-let sweepSpeed = 1.22;
+
+// Normālais ātrums.
+const normalSweepSpeed =
+    1.22;
+
+
+// Processing laikā
+// needle nedaudz paātrinās.
+let sweepSpeedMultiplier =
+    1;
+
 
 // Iepriekšējā frame laiks.
-let previousTime = 0;
+let previousTime =
+    0;
 
 
 // ======================================================
-// AUGŠĒJĀ OBJEKTA POZĪCIJA
+// AUGŠĒJAIS TARGET
 // ======================================================
 
-// -PI / 2 = 12 o'clock.
-const topTargetAngle = -Math.PI / 2;
+// 12 o'clock.
+const topTargetAngle =
+    -Math.PI / 2;
 
-// Attālums no centra.
-const topDistanceFactor = 0.58;
 
-// Maksimālais izmērs.
-const topMaxWidth = 650;
+const topDistanceFactor =
+    0.58;
 
-// Izmērs pret browser platumu.
-const topWidthFactor = 0.28;
+
+const topMaxWidth =
+    300;
+
+
+const topWidthFactor =
+    0.28;
 
 
 // ======================================================
-// APAKŠĒJĀ OBJEKTA POZĪCIJA
+// APAKŠĒJAIS TARGET
 // ======================================================
 
-// PI / 2 = 6 o'clock.
-const bottomTargetAngle = Math.PI / 2;
+// 6 o'clock.
+const bottomTargetAngle =
+    Math.PI / 2;
 
-// Cik tālu uz leju no centra.
-const bottomDistanceFactor = 0.50;
 
-// Izmērs pret radara radius.
-const bottomSizeFactor = 1.5;
+// Regulē atrašanās vietu.
+const bottomDistanceFactor =
+    0.50;
 
-// Maksimālais platums.
-const bottomMaxWidth = 550;
+
+// Regulē izmēru.
+const bottomSizeFactor =
+    1.05;
+
+
+const bottomMaxWidth =
+    420;
+
 
 // ======================================================
 // DOT PARAMETRI
 // ======================================================
 //
-// ŠIE PARAMETRI ATTIECAS UZ ABIEM OBJEKTIEM.
-//
-// Tātad augšējais un apakšējais izskatīsies vienādi.
+// Abi objekti izmanto vienu stilu.
 
-const dotSpacing = 5;
+const dotSpacing =
+    5;
 
-const dotMinRadius = 1.15;
-const dotMaxRadius = 2.05;
 
-const dotJitter = 1.25;
+const dotMinRadius =
+    1.15;
 
-// Transparent pixel threshold.
-const dotAlphaThreshold = 45;
+
+const dotMaxRadius =
+    2.05;
+
+
+const dotJitter =
+    1.25;
+
+
+const dotAlphaThreshold =
+    45;
 
 
 // ======================================================
 // DOT KRĀSA
 // ======================================================
 
-const dotRed = 105;
-const dotGreen = 255;
-const dotBlue = 225;
+const dotRed =
+    105;
+
+
+const dotGreen =
+    255;
+
+
+const dotBlue =
+    225;
 
 
 // ======================================================
 // SCAN PARAMETRI
 // ======================================================
 
-// Neliela rezerve pirms/pēc objekta.
-const scanPadding = 0.008;
+const scanPadding =
+    0.008;
 
-// Mīksta pāreja tieši pie needle.
-const revealFeather = 0.012;
 
-// Cik ilgi objekts paliek pilnībā redzams pēc scan.
-const objectHoldTime = 900;
+const revealFeather =
+    0.012;
+
+
+// Cik ilgi pilns objekts
+// paliek redzams.
+const objectHoldTime =
+    900;
+
 
 // Fade ātrums.
-const objectFadeSpeed = 0.52;
+const objectFadeSpeed =
+    0.52;
 
 
 // ======================================================
-// OBJEKTU DATI
+// SAGATAVOTIE TARGET DATI
 // ======================================================
 
-// Šeit pēc image load būs visi dot dati.
-let topData = null;
-let bottomData = null;
+let topData =
+    null;
 
 
-// ======================================================
-// AUGŠĒJĀ OBJEKTA ANIMĀCIJAS STĀVOKLIS
-// ======================================================
-
-const topState = {
-
-    // idle
-    // scanning
-    // holding
-    // fading
-    mode: "idle",
-
-    opacity: 0,
-
-    revealProgress: 0,
-
-    holdUntil: 0,
-
-    wasScanningLastFrame: false
-};
+let bottomData =
+    null;
 
 
 // ======================================================
-// APAKŠĒJĀ OBJEKTA ANIMĀCIJAS STĀVOKLIS
+// TARGET STATE FACTORY
 // ======================================================
 
-const bottomState = {
+function createTargetState() {
 
-    mode: "idle",
+    return {
 
-    opacity: 0,
+        mode:
+            "idle",
 
-    revealProgress: 0,
+        opacity:
+            0,
 
-    holdUntil: 0,
+        revealProgress:
+            0,
 
-    wasScanningLastFrame: false
-};
+        holdUntil:
+            0,
+
+        wasScanningLastFrame:
+            false,
+
+        completedOnce:
+            false
+    };
+}
+
+
+const topState =
+    createTargetState();
+
+
+const bottomState =
+    createTargetState();
+
+
+// ======================================================
+// SESSION UI STATE
+// ======================================================
+
+// Vai session panelis jau ir parādīts.
+let sessionPanelShown =
+    false;
+
+
+// Kad panelis parādās,
+// bottom target vairs neatkārtojas.
+let bottomTargetEnabled =
+    true;
+
+
+// Vai šobrīd apstrādājam kodu.
+let processingSession =
+    false;
+
+
+// Vai sākusies pāreja uz course.
+let courseTransitionStarted =
+    false;
 
 
 // ======================================================
@@ -168,24 +309,28 @@ const bottomState = {
 function resizeCanvas() {
 
     const dpr =
-        window.devicePixelRatio || 1;
+        window.devicePixelRatio ||
+        1;
 
 
     canvas.width =
-        window.innerWidth * dpr;
+        window.innerWidth *
+        dpr;
+
 
     canvas.height =
-        window.innerHeight * dpr;
+        window.innerHeight *
+        dpr;
 
 
     canvas.style.width =
         `${window.innerWidth}px`;
 
+
     canvas.style.height =
         `${window.innerHeight}px`;
 
 
-    // Ļauj mums turpināt izmantot normālus CSS pikseļus.
     ctx.setTransform(
         dpr,
         0,
@@ -196,7 +341,7 @@ function resizeCanvas() {
     );
 
 
-    // Pēc resize pārrēķinām abus objektus.
+    // Pārrēķinām target dot punktus.
     if (
         topImage.complete &&
         topImage.naturalWidth
@@ -213,11 +358,6 @@ function resizeCanvas() {
 
         buildBottomData();
     }
-
-
-    // Reset abu objektu animāciju.
-    resetState(topState);
-    resetState(bottomState);
 }
 
 
@@ -228,37 +368,26 @@ window.addEventListener(
 
 
 // ======================================================
-// STATE RESET
+// LEŅĶI
 // ======================================================
 
-function resetState(state) {
-
-    state.mode = "idle";
-
-    state.opacity = 0;
-
-    state.revealProgress = 0;
-
-    state.holdUntil = 0;
-
-    state.wasScanningLastFrame = false;
-}
-
-
-// ======================================================
-// LEŅĶU PALĪGFUNKCIJAS
-// ======================================================
-
-function normalizeAngle(angle) {
+function normalizeAngle(
+    angle
+) {
 
     const fullCircle =
-        Math.PI * 2;
+        Math.PI *
+        2;
 
 
     return (
-        (angle % fullCircle) +
+        (
+            angle %
+            fullCircle
+        ) +
         fullCircle
-    ) % fullCircle;
+    ) %
+    fullCircle;
 }
 
 
@@ -270,11 +399,13 @@ function signedAngleDifference(
     return Math.atan2(
 
         Math.sin(
-            angle - reference
+            angle -
+            reference
         ),
 
         Math.cos(
-            angle - reference
+            angle -
+            reference
         )
     );
 }
@@ -286,7 +417,8 @@ function angularDistanceCW(
 ) {
 
     return normalizeAngle(
-        toAngle - fromAngle
+        toAngle -
+        fromAngle
     );
 }
 
@@ -295,10 +427,8 @@ function angularDistanceCW(
 // STABILS RANDOM
 // ======================================================
 //
-// Random izmantojam tikai punktu izskatam.
-//
-// Tas vienmēr dod vienu un to pašu rezultātu
-// konkrētajam x/y, tāpēc punkti nevibrēs.
+// Punktu random pozīcijas ir stabilas,
+// tāpēc tie nevibrē katru frame.
 
 function pseudoRandom(
     x,
@@ -308,20 +438,29 @@ function pseudoRandom(
 
     const value =
         Math.sin(
-            x * 12.9898 +
-            y * 78.233 +
-            seed * 37.719
+
+            x *
+            12.9898 +
+
+            y *
+            78.233 +
+
+            seed *
+            37.719
+
         ) *
         43758.5453;
 
 
     return value -
-        Math.floor(value);
+        Math.floor(
+            value
+        );
 }
 
 
 // ======================================================
-// RADARA PAMATA LAYOUT
+// RADARA LAYOUT
 // ======================================================
 
 function getRadarLayout() {
@@ -329,15 +468,19 @@ function getRadarLayout() {
     const width =
         window.innerWidth;
 
+
     const height =
         window.innerHeight;
 
 
     const centerX =
-        width / 2;
+        width /
+        2;
+
 
     const centerY =
-        height / 2;
+        height /
+        2;
 
 
     const radius =
@@ -362,7 +505,7 @@ function getRadarLayout() {
 
 
 // ======================================================
-// AUGŠĒJĀ ATTĒLA BOX
+// TOP BOX
 // ======================================================
 
 function getTopBox() {
@@ -373,7 +516,9 @@ function getTopBox() {
 
     const width =
         Math.min(
+
             topMaxWidth,
+
             layout.width *
             topWidthFactor
         );
@@ -394,17 +539,21 @@ function getTopBox() {
 
     const centerX =
         layout.centerX +
+
         Math.cos(
             topTargetAngle
         ) *
+
         distance;
 
 
     const centerY =
         layout.centerY +
+
         Math.sin(
             topTargetAngle
         ) *
+
         distance;
 
 
@@ -428,7 +577,7 @@ function getTopBox() {
 
 
 // ======================================================
-// APAKŠĒJĀ ATTĒLA BOX
+// BOTTOM BOX
 // ======================================================
 
 function getBottomBox() {
@@ -439,7 +588,9 @@ function getBottomBox() {
 
     const width =
         Math.min(
+
             bottomMaxWidth,
+
             layout.radius *
             bottomSizeFactor
         );
@@ -460,17 +611,21 @@ function getBottomBox() {
 
     const centerX =
         layout.centerX +
+
         Math.cos(
             bottomTargetAngle
         ) *
+
         distance;
 
 
     const centerY =
         layout.centerY +
+
         Math.sin(
             bottomTargetAngle
         ) *
+
         distance;
 
 
@@ -494,15 +649,8 @@ function getBottomBox() {
 
 
 // ======================================================
-// UNIVERSĀLA DOT TARGET IZVEIDOŠANA
+// UNIVERSĀLA DOT TARGET IZVEIDE
 // ======================================================
-//
-// Šī funkcija strādā GAN top, GAN bottom.
-//
-// Image -> invisible canvas -> alpha detection -> dots.
-//
-// Katram dot tiek arī aprēķināts leņķis,
-// lai needle varētu to atklāt precīzi savā laikā.
 
 function buildDotTarget(
     image,
@@ -516,7 +664,9 @@ function buildDotTarget(
 
     const pixelWidth =
         Math.max(
+
             1,
+
             Math.round(
                 box.width
             )
@@ -525,7 +675,9 @@ function buildDotTarget(
 
     const pixelHeight =
         Math.max(
+
             1,
+
             Math.round(
                 box.height
             )
@@ -533,7 +685,7 @@ function buildDotTarget(
 
 
     // --------------------------------------------------
-    // IMAGE -> OFFSCREEN CANVAS
+    // OFFSCREEN CANVAS
     // --------------------------------------------------
 
     const sourceCanvas =
@@ -545,15 +697,19 @@ function buildDotTarget(
     sourceCanvas.width =
         pixelWidth;
 
+
     sourceCanvas.height =
         pixelHeight;
 
 
     const sourceCtx =
         sourceCanvas.getContext(
+
             "2d",
+
             {
-                willReadFrequently: true
+                willReadFrequently:
+                    true
             }
         );
 
@@ -586,11 +742,12 @@ function buildDotTarget(
 
 
     // --------------------------------------------------
-    // ATRODAM REĀLO LEŅĶA ROBEŽU
+    // ATRODAM REĀLO ATTĒLA LEŅĶA ROBEŽU
     // --------------------------------------------------
 
     let minOffset =
         Infinity;
+
 
     let maxOffset =
         -Infinity;
@@ -609,52 +766,65 @@ function buildDotTarget(
         ) {
 
             const pixelIndex =
+
                 y *
                 pixelWidth +
                 x;
 
 
             const dataIndex =
+
                 pixelIndex *
                 4;
 
 
             const alpha =
+
                 pixels[
-                    dataIndex + 3
+                    dataIndex +
+                    3
                 ];
 
 
-            // Transparent pixel.
             if (
-                alpha < 5
+                alpha <
+                5
             ) {
 
                 continue;
             }
 
 
-            // Pārvēršam local image pixel
-            // par reālo browser koordināti.
             const screenX =
+
                 box.x +
+
                 (
-                    (x + 0.5) /
+                    (
+                        x +
+                        0.5
+                    ) /
                     pixelWidth
                 ) *
+
                 box.width;
 
 
             const screenY =
+
                 box.y +
+
                 (
-                    (y + 0.5) /
+                    (
+                        y +
+                        0.5
+                    ) /
                     pixelHeight
                 ) *
+
                 box.height;
 
 
-            // Leņķis no radara centra uz pixel.
             const pixelAngle =
                 Math.atan2(
 
@@ -666,7 +836,6 @@ function buildDotTarget(
                 );
 
 
-            // Nobīde no objekta centrālā leņķa.
             const offset =
                 signedAngleDifference(
 
@@ -705,14 +874,18 @@ function buildDotTarget(
     const scanStartAngle =
 
         box.targetAngle +
+
         minOffset -
+
         scanPadding;
 
 
     const scanEndAngle =
 
         box.targetAngle +
+
         maxOffset +
+
         scanPadding;
 
 
@@ -726,10 +899,11 @@ function buildDotTarget(
 
 
     // --------------------------------------------------
-    // VEIDOJAM DOTS
+    // DOTS
     // --------------------------------------------------
 
-    const dots = [];
+    const dots =
+        [];
 
 
     for (
@@ -744,14 +918,14 @@ function buildDotTarget(
             gridX += dotSpacing
         ) {
 
-            // Stable random jitter.
             const randomX =
                 pseudoRandom(
 
                     gridX,
                     gridY,
 
-                    seedOffset + 1
+                    seedOffset +
+                    1
                 );
 
 
@@ -761,30 +935,38 @@ function buildDotTarget(
                     gridX,
                     gridY,
 
-                    seedOffset + 2
+                    seedOffset +
+                    2
                 );
 
 
             const jitterX =
+
                 (
                     randomX -
                     0.5
                 ) *
+
                 dotJitter *
+
                 2;
 
 
             const jitterY =
+
                 (
                     randomY -
                     0.5
                 ) *
+
                 dotJitter *
+
                 2;
 
 
             const x =
                 Math.round(
+
                     gridX +
                     jitterX
                 );
@@ -792,6 +974,7 @@ function buildDotTarget(
 
             const y =
                 Math.round(
+
                     gridY +
                     jitterY
                 );
@@ -809,23 +992,26 @@ function buildDotTarget(
 
 
             const pixelIndex =
+
                 y *
                 pixelWidth +
                 x;
 
 
             const dataIndex =
+
                 pixelIndex *
                 4;
 
 
             const alpha =
+
                 pixels[
-                    dataIndex + 3
+                    dataIndex +
+                    3
                 ];
 
 
-            // Punkts nav uz attēla formas.
             if (
                 alpha <
                 dotAlphaThreshold
@@ -835,31 +1021,35 @@ function buildDotTarget(
             }
 
 
-            // --------------------------------------------------
-            // DOT POZĪCIJA
-            // --------------------------------------------------
-
             const screenX =
+
                 box.x +
+
                 (
-                    (x + 0.5) /
+                    (
+                        x +
+                        0.5
+                    ) /
                     pixelWidth
                 ) *
+
                 box.width;
 
 
             const screenY =
+
                 box.y +
+
                 (
-                    (y + 0.5) /
+                    (
+                        y +
+                        0.5
+                    ) /
                     pixelHeight
                 ) *
+
                 box.height;
 
-
-            // --------------------------------------------------
-            // DOT LEŅĶIS
-            // --------------------------------------------------
 
             const dotAngle =
                 Math.atan2(
@@ -872,8 +1062,6 @@ function buildDotTarget(
                 );
 
 
-            // Cik tālu needle jāaiziet
-            // no scan start līdz šim dot.
             const revealProgress =
                 angularDistanceCW(
 
@@ -883,17 +1071,14 @@ function buildDotTarget(
                 );
 
 
-            // --------------------------------------------------
-            // DOT IZSKATS
-            // --------------------------------------------------
-
             const sizeRandom =
                 pseudoRandom(
 
                     x,
                     y,
 
-                    seedOffset + 3
+                    seedOffset +
+                    3
                 );
 
 
@@ -903,13 +1088,17 @@ function buildDotTarget(
                     x,
                     y,
 
-                    seedOffset + 4
+                    seedOffset +
+                    4
                 );
 
 
             const dotRadius =
+
                 dotMinRadius +
+
                 sizeRandom *
+
                 (
                     dotMaxRadius -
                     dotMinRadius
@@ -917,8 +1106,11 @@ function buildDotTarget(
 
 
             const brightness =
+
                 0.62 +
+
                 brightnessRandom *
+
                 0.38;
 
 
@@ -955,7 +1147,7 @@ function buildDotTarget(
 
 
 // ======================================================
-// BUILD TOP
+// BUILD TARGETS
 // ======================================================
 
 function buildTopData() {
@@ -981,10 +1173,6 @@ function buildTopData() {
 }
 
 
-// ======================================================
-// BUILD BOTTOM
-// ======================================================
-
 function buildBottomData() {
 
     if (
@@ -1009,12 +1197,8 @@ function buildBottomData() {
 
 
 // ======================================================
-// UNIVERSĀLA TARGET ANIMĀCIJA
+// TARGET UPDATE
 // ======================================================
-//
-// Šī pati funkcija kontrolē gan top, gan bottom.
-//
-// Tātad abi uzvedas IDENTISKI.
 
 function updateTarget(
     targetData,
@@ -1029,8 +1213,6 @@ function updateTarget(
     }
 
 
-    // Cik tālu needle atrodas
-    // no konkrētā target scan sākuma.
     const sweepProgress =
         angularDistanceCW(
 
@@ -1040,10 +1222,10 @@ function updateTarget(
         );
 
 
-    // Vai needle pašlaik atrodas
-    // objekta scan zonā.
     const isScanning =
+
         sweepProgress <=
+
         targetData.totalScanSpan;
 
 
@@ -1053,7 +1235,6 @@ function updateTarget(
 
     if (isScanning) {
 
-        // Tikko needle pieskārās objektam.
         if (
             !state.wasScanningLastFrame
         ) {
@@ -1071,7 +1252,6 @@ function updateTarget(
         }
 
 
-        // Needle kustība tieši kontrolē reveal.
         state.revealProgress =
             Math.min(
 
@@ -1083,7 +1263,7 @@ function updateTarget(
 
 
     // --------------------------------------------------
-    // NEEDLE IZGĀJA CAURI OBJEKTAM
+    // AFTER SCAN
     // --------------------------------------------------
 
     else {
@@ -1094,12 +1274,10 @@ function updateTarget(
             "scanning"
         ) {
 
-            // Atklājam pēdējos punktus.
             state.revealProgress =
                 targetData.totalScanSpan;
 
 
-            // Hold.
             state.mode =
                 "holding";
 
@@ -1114,10 +1292,6 @@ function updateTarget(
         }
 
 
-        // --------------------------------------------------
-        // HOLD -> FADE
-        // --------------------------------------------------
-
         if (
             state.mode ===
             "holding" &&
@@ -1129,10 +1303,6 @@ function updateTarget(
                 "fading";
         }
 
-
-        // --------------------------------------------------
-        // FADE
-        // --------------------------------------------------
 
         if (
             state.mode ===
@@ -1146,7 +1316,8 @@ function updateTarget(
 
 
             if (
-                state.opacity <= 0
+                state.opacity <=
+                0
             ) {
 
                 state.opacity =
@@ -1159,6 +1330,11 @@ function updateTarget(
 
                 state.revealProgress =
                     0;
+
+
+                // Svarīgi session panel loģikai.
+                state.completedOnce =
+                    true;
             }
         }
     }
@@ -1170,10 +1346,8 @@ function updateTarget(
 
 
 // ======================================================
-// UNIVERSĀLA DOT TARGET ZĪMĒŠANA
+// TARGET DRAW
 // ======================================================
-//
-// Arī šī pati funkcija zīmē gan top, gan bottom.
 
 function drawDotTarget(
     targetData,
@@ -1182,8 +1356,10 @@ function drawDotTarget(
 
     if (
         !targetData ||
-        state.mode === "idle" ||
-        state.opacity <= 0
+        state.mode ===
+        "idle" ||
+        state.opacity <=
+        0
     ) {
 
         return;
@@ -1193,7 +1369,6 @@ function drawDotTarget(
     ctx.save();
 
 
-    // Glow.
     ctx.shadowColor =
         "rgba(100, 255, 225, 0.55)";
 
@@ -1202,20 +1377,15 @@ function drawDotTarget(
         6;
 
 
-    // --------------------------------------------------
-    // VISI TARGET PUNKTI
-    // --------------------------------------------------
-
     for (
         const dot of
         targetData.dots
     ) {
 
-        // Cik tālu needle jau ir
-        // aiz konkrētā punkta.
         const distanceBehindNeedle =
 
             state.revealProgress -
+
             dot.revealProgress;
 
 
@@ -1223,7 +1393,6 @@ function drawDotTarget(
             0;
 
 
-        // Needle jau ticis pāri.
         if (
             distanceBehindNeedle >=
             revealFeather
@@ -1234,7 +1403,6 @@ function drawDotTarget(
         }
 
 
-        // Punkts ir tieši pie needle.
         else if (
             distanceBehindNeedle >
             -revealFeather
@@ -1244,6 +1412,7 @@ function drawDotTarget(
 
                 (
                     distanceBehindNeedle +
+
                     revealFeather
                 ) /
 
@@ -1254,23 +1423,15 @@ function drawDotTarget(
         }
 
 
-        // Needle vēl nav ticis līdz dot.
-        else {
-
-            visibility =
-                0;
-        }
-
-
         if (
-            visibility <= 0
+            visibility <=
+            0
         ) {
 
             continue;
         }
 
 
-        // Gala alpha.
         const alpha =
 
             visibility *
@@ -1279,10 +1440,6 @@ function drawDotTarget(
 
             state.opacity;
 
-
-        // --------------------------------------------------
-        // DOT
-        // --------------------------------------------------
 
         ctx.beginPath();
 
@@ -1297,7 +1454,8 @@ function drawDotTarget(
 
             0,
 
-            Math.PI * 2
+            Math.PI *
+            2
         );
 
 
@@ -1320,7 +1478,410 @@ function drawDotTarget(
 
 
 // ======================================================
-// RADARA ZĪMĒŠANA
+// SESSION PANEL
+// ======================================================
+
+function showSessionPanel() {
+
+    if (
+        sessionPanelShown
+    ) {
+
+        return;
+    }
+
+
+    sessionPanelShown =
+        true;
+
+
+    // Bottom logo vairs neatkārtojas.
+    bottomTargetEnabled =
+        false;
+
+
+    sessionPanel.classList.add(
+        "visible"
+    );
+
+
+    // Input vēl nefokusējam automātiski,
+    // lai Android keyboard pats neuzlec.
+}
+
+
+// ======================================================
+// RESET SESSION PANEL
+// ======================================================
+
+function resetSessionPanel() {
+
+    processingSession =
+        false;
+
+
+    sweepSpeedMultiplier =
+        1;
+
+
+    sessionPanel.classList.remove(
+        "processing",
+        "success",
+        "denied"
+    );
+
+
+    sessionStatus.textContent =
+        "ENTER SESSION CODE";
+
+
+    sessionStatusSub.textContent =
+        "INSTRUCTOR ACCESS KEY REQUIRED";
+
+
+    sessionCodeInput.disabled =
+        false;
+
+
+    enterButton.disabled =
+        false;
+
+
+    sessionCodeInput.value =
+        "";
+
+
+    sessionCodeInput.focus();
+}
+
+
+// ======================================================
+// PROCESS SESSION CODE
+// ======================================================
+
+function processSessionCode() {
+
+    if (
+        processingSession ||
+        courseTransitionStarted
+    ) {
+
+        return;
+    }
+
+
+    const enteredCode =
+        sessionCodeInput.value
+            .trim()
+            .toUpperCase();
+
+
+    // Nekas nav ievadīts.
+    if (!enteredCode) {
+
+        sessionPanel.classList.add(
+            "denied"
+        );
+
+
+        sessionStatus.textContent =
+            "CODE REQUIRED";
+
+
+        sessionStatusSub.textContent =
+            "ENTER THE INSTRUCTOR SESSION KEY";
+
+
+        setTimeout(
+            () => {
+
+                sessionPanel.classList.remove(
+                    "denied"
+                );
+
+
+                sessionStatus.textContent =
+                    "ENTER SESSION CODE";
+
+
+                sessionStatusSub.textContent =
+                    "INSTRUCTOR ACCESS KEY REQUIRED";
+
+            },
+            900
+        );
+
+
+        return;
+    }
+
+
+    processingSession =
+        true;
+
+
+    // Nedaudz paātrinām radar sweep.
+    sweepSpeedMultiplier =
+        1.28;
+
+
+    sessionCodeInput.disabled =
+        true;
+
+
+    enterButton.disabled =
+        true;
+
+
+    sessionPanel.classList.add(
+        "processing"
+    );
+
+
+    sessionStatus.textContent =
+        "PROCESSING SESSION CODE";
+
+
+    sessionStatusSub.textContent =
+        "VALIDATING ACCESS KEY";
+
+
+    // --------------------------------------------------
+    // 1.2 SEK
+    // --------------------------------------------------
+
+    setTimeout(
+        () => {
+
+            if (
+                enteredCode ===
+                DEMO_SESSION_CODE
+            ) {
+
+                sessionStatus.textContent =
+                    "CODE VERIFIED";
+
+
+                sessionStatusSub.textContent =
+                    "SESSION IDENTIFIED";
+            }
+
+            else {
+
+                sessionStatus.textContent =
+                    "ACCESS KEY NOT RECOGNISED";
+
+
+                sessionStatusSub.textContent =
+                    "SESSION VALIDATION FAILED";
+            }
+
+        },
+        1200
+    );
+
+
+    // --------------------------------------------------
+    // 2 SEK
+    // --------------------------------------------------
+
+    setTimeout(
+        () => {
+
+            if (
+                enteredCode ===
+                DEMO_SESSION_CODE
+            ) {
+
+                sessionPanel.classList.remove(
+                    "processing"
+                );
+
+
+                sessionPanel.classList.add(
+                    "success"
+                );
+
+
+                sessionStatus.textContent =
+                    "ACCESS GRANTED";
+
+
+                sessionStatusSub.textContent =
+                    "TRAINING SESSION READY";
+
+
+                // Īss needle boost pirms transition.
+                sweepSpeedMultiplier =
+                    1.5;
+
+
+                // Parādām session kodu fake course page.
+                activeSessionBadge.textContent =
+                    `SESSION ${enteredCode}`;
+
+
+                // Nedaudz vēlāk sākam page transition.
+                setTimeout(
+                    () => {
+
+                        beginCourseTransition();
+
+                    },
+                    650
+                );
+            }
+
+            else {
+
+                // --------------------------------------------------
+                // ACCESS DENIED
+                // --------------------------------------------------
+
+                sessionPanel.classList.remove(
+                    "processing"
+                );
+
+
+                sessionPanel.classList.add(
+                    "denied"
+                );
+
+
+                sessionStatus.textContent =
+                    "ACCESS DENIED";
+
+
+                sessionStatusSub.textContent =
+                    "CHECK SESSION CODE";
+
+
+                sweepSpeedMultiplier =
+                    1;
+
+
+                // Pēc brīža dodam vēl vienu mēģinājumu.
+                setTimeout(
+                    () => {
+
+                        resetSessionPanel();
+
+                    },
+                    1400
+                );
+            }
+
+        },
+        2000
+    );
+}
+
+
+// ======================================================
+// COURSE TRANSITION
+// ======================================================
+
+function beginCourseTransition() {
+
+    if (
+        courseTransitionStarted
+    ) {
+
+        return;
+    }
+
+
+    courseTransitionStarted =
+        true;
+
+
+    // Circular ring no radara centra.
+    transitionRing.classList.add(
+        "active"
+    );
+
+
+    // Atveram course screen ar circle clip-path.
+    courseScreen.classList.add(
+        "open"
+    );
+
+
+    // Session panelis mazliet izdziest.
+    sessionPanel.style.opacity =
+        "0";
+
+
+    sessionPanel.style.pointerEvents =
+        "none";
+
+
+    // Kad transition pabeigts,
+    // atgriežam normālu sweep ātrumu.
+    setTimeout(
+        () => {
+
+            sweepSpeedMultiplier =
+                1;
+
+        },
+        1300
+    );
+}
+
+
+// ======================================================
+// UI EVENTI
+// ======================================================
+
+// Enter button.
+enterButton.addEventListener(
+    "click",
+    processSessionCode
+);
+
+
+// Keyboard Enter.
+sessionCodeInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key ===
+            "Enter"
+        ) {
+
+            processSessionCode();
+        }
+    }
+);
+
+
+// Automātiski lielie burti.
+sessionCodeInput.addEventListener(
+    "input",
+    () => {
+
+        sessionCodeInput.value =
+            sessionCodeInput.value
+                .toUpperCase();
+    }
+);
+
+
+// Demo reset.
+resetDemoButton.addEventListener(
+    "click",
+    () => {
+
+        // Eksperimentam vienkāršākais restart.
+        window.location.reload();
+    }
+);
+
+
+// ======================================================
+// RADARA DRAW
 // ======================================================
 
 function drawRadar() {
@@ -1385,6 +1946,7 @@ function drawRadar() {
         const ringRadius =
 
             radius *
+
             (
                 i /
                 ringCount
@@ -1421,7 +1983,7 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // HORIZONTĀLĀ LĪNIJA
+    // KRUSTA LĪNIJAS
     // --------------------------------------------------
 
     ctx.beginPath();
@@ -1452,10 +2014,6 @@ function drawRadar() {
     ctx.stroke();
 
 
-    // --------------------------------------------------
-    // VERTIKĀLĀ LĪNIJA
-    // --------------------------------------------------
-
     ctx.beginPath();
 
 
@@ -1485,7 +2043,7 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // SWEEP GLOW
+    // SWEEP GLOW SEKTORS
     // --------------------------------------------------
 
     ctx.save();
@@ -1566,46 +2124,53 @@ function drawRadar() {
     ctx.restore();
 
 
-    // ==================================================
-    // ABI DOT OBJEKTI
-    // ==================================================
-    //
-    // Abi tiek zīmēti PIRMS needle.
-    //
-    // Tāpēc needle vizuāli iet viņiem pāri.
+    // --------------------------------------------------
+    // DOT TARGETS
+    // --------------------------------------------------
 
     ctx.save();
 
-    // Drošībai clip uz radara apli.
+
+    // Neļaujam dot attēliem iziet ārpus radara.
     ctx.beginPath();
+
 
     ctx.arc(
 
         centerX,
         centerY,
 
-        radius - 2,
+        radius -
+        2,
 
         0,
 
-        Math.PI * 2
+        Math.PI *
+        2
     );
+
 
     ctx.clip();
 
 
-    // Augšējais.
+    // Top turpina ciklot arī tad,
+    // kad session panel ir redzams.
     drawDotTarget(
         topData,
         topState
     );
 
 
-    // Apakšējais.
-    drawDotTarget(
-        bottomData,
-        bottomState
-    );
+    // Bottom tikai pirms session panel.
+    if (
+        bottomTargetEnabled
+    ) {
+
+        drawDotTarget(
+            bottomData,
+            bottomState
+        );
+    }
 
 
     ctx.restore();
@@ -1650,7 +2215,10 @@ function drawRadar() {
 
             centerX +
 
-            Math.cos(angle) *
+            Math.cos(
+                angle
+            ) *
+
             radius;
 
 
@@ -1658,7 +2226,10 @@ function drawRadar() {
 
             centerY +
 
-            Math.sin(angle) *
+            Math.sin(
+                angle
+            ) *
+
             radius;
 
 
@@ -1696,7 +2267,7 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // GALVENĀ NEEDLE
+    // NEEDLE
     // --------------------------------------------------
 
     const sweepX =
@@ -1790,7 +2361,8 @@ function drawRadar() {
 
         0,
 
-        Math.PI * 2
+        Math.PI *
+        2
     );
 
 
@@ -1803,12 +2375,13 @@ function drawRadar() {
 
 
 // ======================================================
-// GALVENĀ ANIMĀCIJA
+// MAIN ANIMATION
 // ======================================================
 
-function animate(currentTime) {
+function animate(
+    currentTime
+) {
 
-    // Pirmais frame.
     if (!previousTime) {
 
         previousTime =
@@ -1831,28 +2404,33 @@ function animate(currentTime) {
 
 
     // --------------------------------------------------
-    // ROTĒJAM NEEDLE
+    // NEEDLE KUSTĪBA
     // --------------------------------------------------
 
     sweepAngle +=
 
-        sweepSpeed *
+        normalSweepSpeed *
+
+        sweepSpeedMultiplier *
+
         deltaTime;
 
 
     if (
         sweepAngle >
-        Math.PI * 2
+        Math.PI *
+        2
     ) {
 
         sweepAngle -=
-            Math.PI * 2;
+            Math.PI *
+            2;
     }
 
 
-    // ==================================================
-    // AUGŠĒJAIS TARGET
-    // ==================================================
+    // --------------------------------------------------
+    // TOP TARGET
+    // --------------------------------------------------
 
     updateTarget(
 
@@ -1866,20 +2444,42 @@ function animate(currentTime) {
     );
 
 
-    // ==================================================
-    // APAKŠĒJAIS TARGET
-    // ==================================================
+    // --------------------------------------------------
+    // BOTTOM TARGET
+    // --------------------------------------------------
 
-    updateTarget(
+    if (
+        bottomTargetEnabled
+    ) {
 
-        bottomData,
+        updateTarget(
 
-        bottomState,
+            bottomData,
 
-        currentTime,
+            bottomState,
 
-        deltaTime
-    );
+            currentTime,
+
+            deltaTime
+        );
+
+
+        // Kad bottom pirmo reizi:
+        //
+        // scan ->
+        // full ->
+        // fade ->
+        // pazuda
+        //
+        // tad parādām SESSION ACCESS.
+        if (
+            bottomState.completedOnce &&
+            !sessionPanelShown
+        ) {
+
+            showSessionPanel();
+        }
+    }
 
 
     // --------------------------------------------------
@@ -1933,6 +2533,7 @@ bottomImage.onload =
 // ======================================================
 
 resizeCanvas();
+
 
 requestAnimationFrame(
     animate

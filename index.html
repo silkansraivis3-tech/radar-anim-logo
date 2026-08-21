@@ -1,30 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
 
-    <!-- Ļauj lapai pareizi pielāgoties arī planšetēm -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Pareizs scaling planšetēm -->
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
 
-    <title>NOVIKONTAS Radar</title>
+    <title>Training Terminal</title>
 
-    <!-- Pieslēdz mūsu CSS failu -->
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
     <!--
-        Canvas ir laukums, uz kura JavaScript zīmēs:
-        - radara apļus
-        - rotējošo staru
-        - logo
-        - detection efektus
+        Visa aplikācija dzīvo šajā shell.
+        Vēlāk šeit varēsim vadīt:
+        radar / course / screensaver / session state.
     -->
-    <canvas id="radarCanvas"></canvas>
+    <main id="appShell">
 
-    <!-- Pieslēdz JavaScript -->
+
+        <!-- ==================================================
+             RADAR SCREEN
+        =================================================== -->
+
+        <section id="radarScreen">
+
+            <!-- Esošā radar animācija -->
+            <canvas id="radarCanvas"></canvas>
+
+
+            <!--
+                Session panelis.
+                Sākumā paslēpts.
+
+                Tas parādīsies pēc bottom dotted object
+                pirmā scan/fade cikla.
+            -->
+            <div
+                id="sessionPanel"
+                class="session-panel"
+            >
+
+                <!-- Dekoratīvās corner detaļas -->
+                <span class="corner corner-tl"></span>
+                <span class="corner corner-tr"></span>
+                <span class="corner corner-bl"></span>
+                <span class="corner corner-br"></span>
+
+
+                <!-- Panel top line -->
+                <div class="panel-header">
+
+                    <span class="panel-header-line"></span>
+
+                    <span class="panel-header-title">
+                        SESSION ACCESS
+                    </span>
+
+                    <span class="panel-header-line"></span>
+
+                </div>
+
+
+                <!-- Status -->
+                <div class="session-status-area">
+
+                    <div
+                        id="sessionStatus"
+                        class="session-status"
+                    >
+                        ENTER SESSION CODE
+                    </div>
+
+                    <div
+                        id="sessionStatusSub"
+                        class="session-status-sub"
+                    >
+                        INSTRUCTOR ACCESS KEY REQUIRED
+                    </div>
+
+                </div>
+
+
+                <!-- Session code input -->
+                <div
+                    id="inputArea"
+                    class="input-area"
+                >
+
+                    <input
+                        id="sessionCodeInput"
+                        type="text"
+                        inputmode="text"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                        spellcheck="false"
+                        maxlength="12"
+                        placeholder="------"
+                        aria-label="Session code"
+                    >
+
+                </div>
+
+
+                <!-- Processing indicator -->
+                <div
+                    id="processingIndicator"
+                    class="processing-indicator"
+                >
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+
+                <!-- ENTER button -->
+                <button
+                    id="enterButton"
+                    class="enter-button"
+                    type="button"
+                >
+                    <span>ENTER</span>
+                </button>
+
+
+                <div class="panel-footer">
+                    TRAINING SESSION TERMINAL
+                </div>
+
+            </div>
+
+
+            <!--
+                Success transition ring.
+                Parādīsies ACCESS GRANTED brīdī.
+            -->
+            <div
+                id="transitionRing"
+                class="transition-ring"
+            ></div>
+
+        </section>
+
+
+        <!-- ==================================================
+             FAKE COURSE SCREEN
+             
+             Pagaidām tikai UX eksperimentam.
+             Vēlāk šeit būs īstais course UI.
+        =================================================== -->
+
+        <section
+            id="courseScreen"
+            class="course-screen"
+        >
+
+            <div class="course-background-grid"></div>
+
+
+            <header class="course-header">
+
+                <div>
+
+                    <div class="course-eyebrow">
+                        ACTIVE TRAINING SESSION
+                    </div>
+
+                    <h1>
+                        Course workspace
+                    </h1>
+
+                </div>
+
+
+                <div
+                    id="activeSessionBadge"
+                    class="session-badge"
+                >
+                    SESSION
+                </div>
+
+            </header>
+
+
+            <div class="course-content">
+
+                <div class="course-intro">
+
+                    <p class="course-kicker">
+                        SESSION VERIFIED
+                    </p>
+
+                    <h2>
+                        Training materials ready
+                    </h2>
+
+                    <p>
+                        Only materials assigned to this session
+                        would be available here.
+                    </p>
+
+                </div>
+
+
+                <div class="course-cards">
+
+                    <button class="course-card">
+
+                        <span class="card-number">
+                            01
+                        </span>
+
+                        <span class="card-content">
+
+                            <strong>
+                                Training Tasks
+                            </strong>
+
+                            <small>
+                                Practical exercises and activities
+                            </small>
+
+                        </span>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    <button class="course-card">
+
+                        <span class="card-number">
+                            02
+                        </span>
+
+                        <span class="card-content">
+
+                            <strong>
+                                Course Materials
+                            </strong>
+
+                            <small>
+                                Handouts and learning resources
+                            </small>
+
+                        </span>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    <button class="course-card">
+
+                        <span class="card-number">
+                            03
+                        </span>
+
+                        <span class="card-content">
+
+                            <strong>
+                                Assessment
+                            </strong>
+
+                            <small>
+                                Tests assigned to this session
+                            </small>
+
+                        </span>
+
+                        <span class="card-arrow">
+                            →
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+                <!--
+                    Tikai mūsu testēšanai.
+                    Vēlāk šo pogu izmetīsim.
+                -->
+                <button
+                    id="resetDemoButton"
+                    class="reset-demo"
+                    type="button"
+                >
+                    RESET DEMO
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
     <script src="radar.js"></script>
 
 </body>
+
 </html>
