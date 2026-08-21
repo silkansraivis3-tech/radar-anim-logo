@@ -1,5 +1,5 @@
 // ======================================================
-// GALVENAIS CANVAS
+// CANVAS
 // ======================================================
 
 const canvas = document.getElementById("radarCanvas");
@@ -7,24 +7,27 @@ const ctx = canvas.getContext("2d");
 
 
 // ======================================================
-// LOGO
+// ATTĒLI
 // ======================================================
 
-// SVG paliek tikai kā avots, lai JavaScript saprastu,
-// kur logo formā drīkst atrasties punkti.
-const logo = new Image();
+// Augšējais attēls / logo.
+const topImage = new Image();
+topImage.src = "./assets/logo_navy.png";
 
-logo.src = "./assets/ass.svg";
+// Apakšējais attēls.
+// Ja fails saucas citādi, nomaini tikai šo rindu.
+const bottomImage = new Image();
+bottomImage.src = "./assets/logo_navy.png";
 
 
 // ======================================================
 // RADARA IESTATĪJUMI
 // ======================================================
 
-// Needle pašreizējais leņķis.
+// Needle sākuma leņķis.
 let sweepAngle = 0;
 
-// Needle ātrums.
+// Needle kustības ātrums.
 let sweepSpeed = 1.22;
 
 // Iepriekšējā frame laiks.
@@ -32,52 +35,54 @@ let previousTime = 0;
 
 
 // ======================================================
-// LOGO POZĪCIJA
+// AUGŠĒJĀ OBJEKTA POZĪCIJA
 // ======================================================
 
-// 12 o'clock.
-const targetAngle = -Math.PI / 2;
+// -PI / 2 = 12 o'clock.
+const topTargetAngle = -Math.PI / 2;
 
-// Logo atrašanās vieta.
-// Mazāks = tuvāk radara centram.
-const targetDistanceFactor = 0.58;
+// Attālums no centra.
+const topDistanceFactor = 0.58;
 
-// Maksimālais logo platums.
-const maxLogoWidth = 500;
+// Maksimālais izmērs.
+const topMaxWidth = 650;
 
-// Logo platums attiecībā pret ekrānu.
-const logoWidthFactor = 0.28;
+// Izmērs pret browser platumu.
+const topWidthFactor = 0.28;
 
 
 // ======================================================
-// DOT LOGO IESTATĪJUMI
+// APAKŠĒJĀ OBJEKTA POZĪCIJA
 // ======================================================
 
-// Aptuvenais attālums starp punktiem.
+// PI / 2 = 6 o'clock.
+const bottomTargetAngle = Math.PI / 2;
+
+// Cik tālu uz leju no centra.
+const bottomDistanceFactor = 0.50;
+
+// Izmērs pret radara radius.
+const bottomSizeFactor = 1.5;
+
+// Maksimālais platums.
+const bottomMaxWidth = 550;
+
+// ======================================================
+// DOT PARAMETRI
+// ======================================================
 //
-// 4 = daudz punktu
-// 5 = vidēji blīvs
-// 6 = retāks radar look
+// ŠIE PARAMETRI ATTIECAS UZ ABIEM OBJEKTIEM.
+//
+// Tātad augšējais un apakšējais izskatīsies vienādi.
+
 const dotSpacing = 5;
 
-// Mazākā punkta radius.
 const dotMinRadius = 1.15;
-
-// Lielākā punkta radius.
 const dotMaxRadius = 2.05;
 
-// Cik stipri punkti var tikt nedaudz nobīdīti,
-// lai viss neizskatītos pēc perfekta Excel grid.
 const dotJitter = 1.25;
 
-// Minimālais SVG alpha,
-// lai konkrētajā vietā drīkstētu būt dots.
-//
-// Ja logo malas šķiet par plānu,
-// samazini uz 30.
-//
-// Ja logo izskatās pārāk "netīrs",
-// palielini uz 80.
+// Transparent pixel threshold.
 const dotAlphaThreshold = 45;
 
 
@@ -85,62 +90,75 @@ const dotAlphaThreshold = 45;
 // DOT KRĀSA
 // ======================================================
 
-// Radar cyan/green tonis.
-// Šobrīd neizmantojam oriģinālo zilo logo krāsu.
-//
-// Ja vēlāk gribi, varam izmantot arī NOVIKONTAS zilo.
 const dotRed = 105;
 const dotGreen = 255;
 const dotBlue = 225;
 
 
 // ======================================================
-// REVEAL IESTATĪJUMI
+// SCAN PARAMETRI
 // ======================================================
 
-// Neliela rezerve pirms pirmā un pēc pēdējā logo punkta.
+// Neliela rezerve pirms/pēc objekta.
 const scanPadding = 0.008;
 
-// Ļoti maigs pārejas laukums tieši pie needle.
-//
-// Tas nozīmē, ka punkti tieši pie needle
-// neieslēdzas brutāli ON/OFF.
+// Mīksta pāreja tieši pie needle.
 const revealFeather = 0.012;
 
+// Cik ilgi objekts paliek pilnībā redzams pēc scan.
+const objectHoldTime = 900;
 
-// ======================================================
-// LOGO STĀVOKLIS
-// ======================================================
-
-// idle
-// scanning
-// holding
-// fading
-let logoState = "idle";
-
-// Scan laikā = 1.
-// Fade laikā samazinās.
-let logoOpacity = 0;
-
-// Līdz kuram laikam logo jāatstāj redzams.
-let logoHoldUntil = 0;
-
-// Iepriekšējā frame scan statuss.
-let wasScanningLastFrame = false;
-
-// Cik tālu needle jau ir noskenējis logo.
-let currentRevealProgress = 0;
+// Fade ātrums.
+const objectFadeSpeed = 0.52;
 
 
 // ======================================================
-// SAGATAVOTIE LOGO DATI
+// OBJEKTU DATI
 // ======================================================
 
-// Te vēlāk būs:
-// - logo ģeometrija
-// - scan sākums/beigas
-// - visi radara punkti
-let scanData = null;
+// Šeit pēc image load būs visi dot dati.
+let topData = null;
+let bottomData = null;
+
+
+// ======================================================
+// AUGŠĒJĀ OBJEKTA ANIMĀCIJAS STĀVOKLIS
+// ======================================================
+
+const topState = {
+
+    // idle
+    // scanning
+    // holding
+    // fading
+    mode: "idle",
+
+    opacity: 0,
+
+    revealProgress: 0,
+
+    holdUntil: 0,
+
+    wasScanningLastFrame: false
+};
+
+
+// ======================================================
+// APAKŠĒJĀ OBJEKTA ANIMĀCIJAS STĀVOKLIS
+// ======================================================
+
+const bottomState = {
+
+    mode: "idle",
+
+    opacity: 0,
+
+    revealProgress: 0,
+
+    holdUntil: 0,
+
+    wasScanningLastFrame: false
+};
 
 
 // ======================================================
@@ -149,14 +167,25 @@ let scanData = null;
 
 function resizeCanvas() {
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr =
+        window.devicePixelRatio || 1;
 
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
 
-    canvas.style.width = `${window.innerWidth}px`;
-    canvas.style.height = `${window.innerHeight}px`;
+    canvas.width =
+        window.innerWidth * dpr;
 
+    canvas.height =
+        window.innerHeight * dpr;
+
+
+    canvas.style.width =
+        `${window.innerWidth}px`;
+
+    canvas.style.height =
+        `${window.innerHeight}px`;
+
+
+    // Ļauj mums turpināt izmantot normālus CSS pikseļus.
     ctx.setTransform(
         dpr,
         0,
@@ -167,25 +196,28 @@ function resizeCanvas() {
     );
 
 
-    // Ja logo jau ielādējies,
-    // pēc resize pārrēķinām dot logo.
+    // Pēc resize pārrēķinām abus objektus.
     if (
-        logo.complete &&
-        logo.naturalWidth
+        topImage.complete &&
+        topImage.naturalWidth
     ) {
 
-        buildLogoScanData();
+        buildTopData();
     }
 
 
-    // Reset animācijas cikls.
-    logoState = "idle";
+    if (
+        bottomImage.complete &&
+        bottomImage.naturalWidth
+    ) {
 
-    logoOpacity = 0;
+        buildBottomData();
+    }
 
-    wasScanningLastFrame = false;
 
-    currentRevealProgress = 0;
+    // Reset abu objektu animāciju.
+    resetState(topState);
+    resetState(bottomState);
 }
 
 
@@ -196,13 +228,32 @@ window.addEventListener(
 
 
 // ======================================================
-// LEŅĶU FUNKCIJAS
+// STATE RESET
+// ======================================================
+
+function resetState(state) {
+
+    state.mode = "idle";
+
+    state.opacity = 0;
+
+    state.revealProgress = 0;
+
+    state.holdUntil = 0;
+
+    state.wasScanningLastFrame = false;
+}
+
+
+// ======================================================
+// LEŅĶU PALĪGFUNKCIJAS
 // ======================================================
 
 function normalizeAngle(angle) {
 
     const fullCircle =
         Math.PI * 2;
+
 
     return (
         (angle % fullCircle) +
@@ -241,33 +292,39 @@ function angularDistanceCW(
 
 
 // ======================================================
-// DETERMINISTIC RANDOM
+// STABILS RANDOM
 // ======================================================
-
-// Mums vajag nelielu random variāciju,
-// BET nedrīkst katru frame ģenerēt citu random,
-// citādi logo visu laiku vibrēs.
 //
-// Šī funkcija vieniem un tiem pašiem x/y
-// vienmēr atgriezīs vienu un to pašu vērtību.
-function pseudoRandom(x, y, seed = 0) {
+// Random izmantojam tikai punktu izskatam.
+//
+// Tas vienmēr dod vienu un to pašu rezultātu
+// konkrētajam x/y, tāpēc punkti nevibrēs.
+
+function pseudoRandom(
+    x,
+    y,
+    seed = 0
+) {
 
     const value =
         Math.sin(
             x * 12.9898 +
             y * 78.233 +
             seed * 37.719
-        ) * 43758.5453;
+        ) *
+        43758.5453;
 
-    return value - Math.floor(value);
+
+    return value -
+        Math.floor(value);
 }
 
 
 // ======================================================
-// IZKĀRTOJUMS
+// RADARA PAMATA LAYOUT
 // ======================================================
 
-function getLayout() {
+function getRadarLayout() {
 
     const width =
         window.innerWidth;
@@ -287,49 +344,8 @@ function getLayout() {
         Math.min(
             width,
             height
-        ) * 0.40;
-
-
-    const logoWidth =
-        Math.min(
-            maxLogoWidth,
-            width * logoWidthFactor
-        );
-
-
-    const logoHeight =
-        logoWidth *
-        (
-            logo.naturalHeight /
-            logo.naturalWidth
-        );
-
-
-    const targetDistance =
-        radius *
-        targetDistanceFactor;
-
-
-    const targetX =
-        centerX +
-        Math.cos(targetAngle) *
-        targetDistance;
-
-
-    const targetY =
-        centerY +
-        Math.sin(targetAngle) *
-        targetDistance;
-
-
-    const logoX =
-        targetX -
-        logoWidth / 2;
-
-
-    const logoY =
-        targetY -
-        logoHeight / 2;
+        ) *
+        0.40;
 
 
     return {
@@ -340,45 +356,169 @@ function getLayout() {
         centerX,
         centerY,
 
-        radius,
-
-        targetX,
-        targetY,
-
-        logoX,
-        logoY,
-
-        logoWidth,
-        logoHeight
+        radius
     };
 }
 
 
 // ======================================================
-// SAGATAVOJAM DOT LOGO
+// AUGŠĒJĀ ATTĒLA BOX
 // ======================================================
 
-function buildLogoScanData() {
-
-    if (
-        !logo.complete ||
-        !logo.naturalWidth
-    ) {
-
-        return;
-    }
-
+function getTopBox() {
 
     const layout =
-        getLayout();
+        getRadarLayout();
 
 
-    // Offscreen logo izmērs.
+    const width =
+        Math.min(
+            topMaxWidth,
+            layout.width *
+            topWidthFactor
+        );
+
+
+    const height =
+        width *
+        (
+            topImage.naturalHeight /
+            topImage.naturalWidth
+        );
+
+
+    const distance =
+        layout.radius *
+        topDistanceFactor;
+
+
+    const centerX =
+        layout.centerX +
+        Math.cos(
+            topTargetAngle
+        ) *
+        distance;
+
+
+    const centerY =
+        layout.centerY +
+        Math.sin(
+            topTargetAngle
+        ) *
+        distance;
+
+
+    return {
+
+        x:
+            centerX -
+            width / 2,
+
+        y:
+            centerY -
+            height / 2,
+
+        width,
+        height,
+
+        targetAngle:
+            topTargetAngle
+    };
+}
+
+
+// ======================================================
+// APAKŠĒJĀ ATTĒLA BOX
+// ======================================================
+
+function getBottomBox() {
+
+    const layout =
+        getRadarLayout();
+
+
+    const width =
+        Math.min(
+            bottomMaxWidth,
+            layout.radius *
+            bottomSizeFactor
+        );
+
+
+    const height =
+        width *
+        (
+            bottomImage.naturalHeight /
+            bottomImage.naturalWidth
+        );
+
+
+    const distance =
+        layout.radius *
+        bottomDistanceFactor;
+
+
+    const centerX =
+        layout.centerX +
+        Math.cos(
+            bottomTargetAngle
+        ) *
+        distance;
+
+
+    const centerY =
+        layout.centerY +
+        Math.sin(
+            bottomTargetAngle
+        ) *
+        distance;
+
+
+    return {
+
+        x:
+            centerX -
+            width / 2,
+
+        y:
+            centerY -
+            height / 2,
+
+        width,
+        height,
+
+        targetAngle:
+            bottomTargetAngle
+    };
+}
+
+
+// ======================================================
+// UNIVERSĀLA DOT TARGET IZVEIDOŠANA
+// ======================================================
+//
+// Šī funkcija strādā GAN top, GAN bottom.
+//
+// Image -> invisible canvas -> alpha detection -> dots.
+//
+// Katram dot tiek arī aprēķināts leņķis,
+// lai needle varētu to atklāt precīzi savā laikā.
+
+function buildDotTarget(
+    image,
+    box,
+    seedOffset
+) {
+
+    const radar =
+        getRadarLayout();
+
+
     const pixelWidth =
         Math.max(
             1,
             Math.round(
-                layout.logoWidth
+                box.width
             )
         );
 
@@ -387,13 +527,13 @@ function buildLogoScanData() {
         Math.max(
             1,
             Math.round(
-                layout.logoHeight
+                box.height
             )
         );
 
 
     // --------------------------------------------------
-    // UZZĪMĒJAM SVG NEREDZAMĀ CANVAS
+    // IMAGE -> OFFSCREEN CANVAS
     // --------------------------------------------------
 
     const sourceCanvas =
@@ -419,7 +559,8 @@ function buildLogoScanData() {
 
 
     sourceCtx.drawImage(
-        logo,
+
+        image,
 
         0,
         0,
@@ -431,8 +572,10 @@ function buildLogoScanData() {
 
     const imageData =
         sourceCtx.getImageData(
+
             0,
             0,
+
             pixelWidth,
             pixelHeight
         );
@@ -443,11 +586,14 @@ function buildLogoScanData() {
 
 
     // --------------------------------------------------
-    // 1. ATRODAM REĀLĀ LOGO LEŅĶA ROBEŽAS
+    // ATRODAM REĀLO LEŅĶA ROBEŽU
     // --------------------------------------------------
 
-    let minOffset = Infinity;
-    let maxOffset = -Infinity;
+    let minOffset =
+        Infinity;
+
+    let maxOffset =
+        -Infinity;
 
 
     for (
@@ -463,11 +609,14 @@ function buildLogoScanData() {
         ) {
 
             const pixelIndex =
-                y * pixelWidth + x;
+                y *
+                pixelWidth +
+                x;
 
 
             const dataIndex =
-                pixelIndex * 4;
+                pixelIndex *
+                4;
 
 
             const alpha =
@@ -476,49 +625,54 @@ function buildLogoScanData() {
                 ];
 
 
-            // Transparent vietas ignorējam.
-            if (alpha < 5) {
+            // Transparent pixel.
+            if (
+                alpha < 5
+            ) {
 
                 continue;
             }
 
 
-            // Pārvēršam logo lokālo pikseli
-            // par reālu ekrāna koordināti.
+            // Pārvēršam local image pixel
+            // par reālo browser koordināti.
             const screenX =
-                layout.logoX +
+                box.x +
                 (
                     (x + 0.5) /
                     pixelWidth
                 ) *
-                layout.logoWidth;
+                box.width;
 
 
             const screenY =
-                layout.logoY +
+                box.y +
                 (
                     (y + 0.5) /
                     pixelHeight
                 ) *
-                layout.logoHeight;
+                box.height;
 
 
-            // Leņķis no radara centra uz šo logo pikseli.
+            // Leņķis no radara centra uz pixel.
             const pixelAngle =
                 Math.atan2(
 
                     screenY -
-                    layout.centerY,
+                    radar.centerY,
 
                     screenX -
-                    layout.centerX
+                    radar.centerX
                 );
 
 
+            // Nobīde no objekta centrālā leņķa.
             const offset =
                 signedAngleDifference(
+
                     pixelAngle,
-                    targetAngle
+
+                    box.targetAngle
                 );
 
 
@@ -544,36 +698,40 @@ function buildLogoScanData() {
     }
 
 
-    // Scan sākums un beigas.
+    // --------------------------------------------------
+    // SCAN START / END
+    // --------------------------------------------------
+
     const scanStartAngle =
-        targetAngle +
+
+        box.targetAngle +
         minOffset -
         scanPadding;
 
 
     const scanEndAngle =
-        targetAngle +
+
+        box.targetAngle +
         maxOffset +
         scanPadding;
 
 
     const totalScanSpan =
         angularDistanceCW(
+
             scanStartAngle,
+
             scanEndAngle
         );
 
 
     // --------------------------------------------------
-    // 2. IZVEIDOJAM PAŠUS PUNKTUS
+    // VEIDOJAM DOTS
     // --------------------------------------------------
 
     const dots = [];
 
 
-    // Neejam cauri katram pikselim.
-    //
-    // Ņemam paraugus ik pēc dotSpacing pikseļiem.
     for (
         let gridY = 0;
         gridY < pixelHeight;
@@ -586,23 +744,24 @@ function buildLogoScanData() {
             gridX += dotSpacing
         ) {
 
-            // --------------------------------------------------
-            // NEDAUDZ NEJAUŠS NOVIETOJUMS
-            // --------------------------------------------------
-
+            // Stable random jitter.
             const randomX =
                 pseudoRandom(
+
                     gridX,
                     gridY,
-                    1
+
+                    seedOffset + 1
                 );
 
 
             const randomY =
                 pseudoRandom(
+
                     gridX,
                     gridY,
-                    2
+
+                    seedOffset + 2
                 );
 
 
@@ -638,7 +797,6 @@ function buildLogoScanData() {
                 );
 
 
-            // Ja jitter aizgāja ārpus attēla.
             if (
                 x < 0 ||
                 x >= pixelWidth ||
@@ -651,11 +809,14 @@ function buildLogoScanData() {
 
 
             const pixelIndex =
-                y * pixelWidth + x;
+                y *
+                pixelWidth +
+                x;
 
 
             const dataIndex =
-                pixelIndex * 4;
+                pixelIndex *
+                4;
 
 
             const alpha =
@@ -664,8 +825,7 @@ function buildLogoScanData() {
                 ];
 
 
-            // Ja šis punkts neatrodas logo formā,
-            // to neizveidojam.
+            // Punkts nav uz attēla formas.
             if (
                 alpha <
                 dotAlphaThreshold
@@ -676,70 +836,78 @@ function buildLogoScanData() {
 
 
             // --------------------------------------------------
-            // PUNKTA POZĪCIJA EKRĀNĀ
+            // DOT POZĪCIJA
             // --------------------------------------------------
 
             const screenX =
-                layout.logoX +
+                box.x +
                 (
                     (x + 0.5) /
                     pixelWidth
                 ) *
-                layout.logoWidth;
+                box.width;
 
 
             const screenY =
-                layout.logoY +
+                box.y +
                 (
                     (y + 0.5) /
                     pixelHeight
                 ) *
-                layout.logoHeight;
+                box.height;
 
 
             // --------------------------------------------------
-            // PUNKTA SCAN LEŅĶIS
+            // DOT LEŅĶIS
             // --------------------------------------------------
 
             const dotAngle =
                 Math.atan2(
 
                     screenY -
-                    layout.centerY,
+                    radar.centerY,
 
                     screenX -
-                    layout.centerX
+                    radar.centerX
                 );
 
 
+            // Cik tālu needle jāaiziet
+            // no scan start līdz šim dot.
             const revealProgress =
                 angularDistanceCW(
+
                     scanStartAngle,
+
                     dotAngle
                 );
 
 
             // --------------------------------------------------
-            // PUNKTA IZSKATS
+            // DOT IZSKATS
             // --------------------------------------------------
 
             const sizeRandom =
                 pseudoRandom(
+
                     x,
                     y,
-                    3
+
+                    seedOffset + 3
                 );
 
 
             const brightnessRandom =
                 pseudoRandom(
+
                     x,
                     y,
-                    4
+
+                    seedOffset + 4
                 );
 
 
-            const radius =
+            const dotRadius =
                 dotMinRadius +
                 sizeRandom *
                 (
@@ -748,7 +916,6 @@ function buildLogoScanData() {
                 );
 
 
-            // Katram dot nedaudz cita intensitāte.
             const brightness =
                 0.62 +
                 brightnessRandom *
@@ -757,11 +924,14 @@ function buildLogoScanData() {
 
             dots.push({
 
-                x: screenX,
+                x:
+                    screenX,
 
-                y: screenY,
+                y:
+                    screenY,
 
-                radius,
+                radius:
+                    dotRadius,
 
                 brightness,
 
@@ -771,13 +941,7 @@ function buildLogoScanData() {
     }
 
 
-    // --------------------------------------------------
-    // SAGLABĀJAM VISU
-    // --------------------------------------------------
-
-    scanData = {
-
-        layout,
+    return {
 
         dots,
 
@@ -791,14 +955,235 @@ function buildLogoScanData() {
 
 
 // ======================================================
-// ZĪMĒJAM DOT LOGO
+// BUILD TOP
 // ======================================================
 
-function drawDotLogo() {
+function buildTopData() {
 
     if (
-        !scanData ||
-        logoOpacity <= 0
+        !topImage.complete ||
+        !topImage.naturalWidth
+    ) {
+
+        return;
+    }
+
+
+    topData =
+        buildDotTarget(
+
+            topImage,
+
+            getTopBox(),
+
+            10
+        );
+}
+
+
+// ======================================================
+// BUILD BOTTOM
+// ======================================================
+
+function buildBottomData() {
+
+    if (
+        !bottomImage.complete ||
+        !bottomImage.naturalWidth
+    ) {
+
+        return;
+    }
+
+
+    bottomData =
+        buildDotTarget(
+
+            bottomImage,
+
+            getBottomBox(),
+
+            30
+        );
+}
+
+
+// ======================================================
+// UNIVERSĀLA TARGET ANIMĀCIJA
+// ======================================================
+//
+// Šī pati funkcija kontrolē gan top, gan bottom.
+//
+// Tātad abi uzvedas IDENTISKI.
+
+function updateTarget(
+    targetData,
+    state,
+    currentTime,
+    deltaTime
+) {
+
+    if (!targetData) {
+
+        return;
+    }
+
+
+    // Cik tālu needle atrodas
+    // no konkrētā target scan sākuma.
+    const sweepProgress =
+        angularDistanceCW(
+
+            targetData.scanStartAngle,
+
+            sweepAngle
+        );
+
+
+    // Vai needle pašlaik atrodas
+    // objekta scan zonā.
+    const isScanning =
+        sweepProgress <=
+        targetData.totalScanSpan;
+
+
+    // --------------------------------------------------
+    // SCANNING
+    // --------------------------------------------------
+
+    if (isScanning) {
+
+        // Tikko needle pieskārās objektam.
+        if (
+            !state.wasScanningLastFrame
+        ) {
+
+            state.mode =
+                "scanning";
+
+
+            state.opacity =
+                1;
+
+
+            state.revealProgress =
+                0;
+        }
+
+
+        // Needle kustība tieši kontrolē reveal.
+        state.revealProgress =
+            Math.min(
+
+                sweepProgress,
+
+                targetData.totalScanSpan
+            );
+    }
+
+
+    // --------------------------------------------------
+    // NEEDLE IZGĀJA CAURI OBJEKTAM
+    // --------------------------------------------------
+
+    else {
+
+        if (
+            state.wasScanningLastFrame &&
+            state.mode ===
+            "scanning"
+        ) {
+
+            // Atklājam pēdējos punktus.
+            state.revealProgress =
+                targetData.totalScanSpan;
+
+
+            // Hold.
+            state.mode =
+                "holding";
+
+
+            state.opacity =
+                1;
+
+
+            state.holdUntil =
+                currentTime +
+                objectHoldTime;
+        }
+
+
+        // --------------------------------------------------
+        // HOLD -> FADE
+        // --------------------------------------------------
+
+        if (
+            state.mode ===
+            "holding" &&
+            currentTime >
+            state.holdUntil
+        ) {
+
+            state.mode =
+                "fading";
+        }
+
+
+        // --------------------------------------------------
+        // FADE
+        // --------------------------------------------------
+
+        if (
+            state.mode ===
+            "fading"
+        ) {
+
+            state.opacity -=
+
+                objectFadeSpeed *
+                deltaTime;
+
+
+            if (
+                state.opacity <= 0
+            ) {
+
+                state.opacity =
+                    0;
+
+
+                state.mode =
+                    "idle";
+
+
+                state.revealProgress =
+                    0;
+            }
+        }
+    }
+
+
+    state.wasScanningLastFrame =
+        isScanning;
+}
+
+
+// ======================================================
+// UNIVERSĀLA DOT TARGET ZĪMĒŠANA
+// ======================================================
+//
+// Arī šī pati funkcija zīmē gan top, gan bottom.
+
+function drawDotTarget(
+    targetData,
+    state
+) {
+
+    if (
+        !targetData ||
+        state.mode === "idle" ||
+        state.opacity <= 0
     ) {
 
         return;
@@ -808,66 +1193,75 @@ function drawDotLogo() {
     ctx.save();
 
 
-    // Viegls glow visam dot logo.
+    // Glow.
     ctx.shadowColor =
         "rgba(100, 255, 225, 0.55)";
 
-    ctx.shadowBlur = 6;
+
+    ctx.shadowBlur =
+        6;
 
 
     // --------------------------------------------------
-    // EJAM CAURI VISIEM LOGO PUNKTIEM
+    // VISI TARGET PUNKTI
     // --------------------------------------------------
 
     for (
         const dot of
-        scanData.dots
+        targetData.dots
     ) {
 
-        // Cik tālu needle jau ir aiz konkrētā punkta.
+        // Cik tālu needle jau ir
+        // aiz konkrētā punkta.
         const distanceBehindNeedle =
-            currentRevealProgress -
+
+            state.revealProgress -
             dot.revealProgress;
 
 
-        let visibility = 0;
+        let visibility =
+            0;
 
 
-        // Needle jau ir pilnīgi izgājis tam pāri.
+        // Needle jau ticis pāri.
         if (
             distanceBehindNeedle >=
             revealFeather
         ) {
 
-            visibility = 1;
+            visibility =
+                1;
         }
 
 
-        // Punkts ir tieši needle tuvumā.
+        // Punkts ir tieši pie needle.
         else if (
             distanceBehindNeedle >
             -revealFeather
         ) {
 
             visibility =
+
                 (
                     distanceBehindNeedle +
                     revealFeather
                 ) /
+
                 (
-                    revealFeather * 2
+                    revealFeather *
+                    2
                 );
         }
 
 
-        // Punkts needle vēl nav sasniegts.
+        // Needle vēl nav ticis līdz dot.
         else {
 
-            visibility = 0;
+            visibility =
+                0;
         }
 
 
-        // Neredzamu punktu vispār nezīmējam.
         if (
             visibility <= 0
         ) {
@@ -878,9 +1272,12 @@ function drawDotLogo() {
 
         // Gala alpha.
         const alpha =
+
             visibility *
+
             dot.brightness *
-            logoOpacity;
+
+            state.opacity;
 
 
         // --------------------------------------------------
@@ -905,6 +1302,7 @@ function drawDotLogo() {
 
 
         ctx.fillStyle =
+
             `rgba(
                 ${dotRed},
                 ${dotGreen},
@@ -928,7 +1326,7 @@ function drawDotLogo() {
 function drawRadar() {
 
     const layout =
-        getLayout();
+        getRadarLayout();
 
 
     const {
@@ -946,11 +1344,16 @@ function drawRadar() {
 
 
     ctx.arc(
+
         centerX,
         centerY,
+
         radius,
+
         0,
-        Math.PI * 2
+
+        Math.PI *
+        2
     );
 
 
@@ -958,7 +1361,9 @@ function drawRadar() {
         "rgba(77, 220, 200, 0.35)";
 
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth =
+        2;
+
 
     ctx.stroke();
 
@@ -967,7 +1372,8 @@ function drawRadar() {
     // IEKŠĒJIE APĻI
     // --------------------------------------------------
 
-    const ringCount = 4;
+    const ringCount =
+        4;
 
 
     for (
@@ -977,19 +1383,28 @@ function drawRadar() {
     ) {
 
         const ringRadius =
+
             radius *
-            (i / ringCount);
+            (
+                i /
+                ringCount
+            );
 
 
         ctx.beginPath();
 
 
         ctx.arc(
+
             centerX,
             centerY,
+
             ringRadius,
+
             0,
-            Math.PI * 2
+
+            Math.PI *
+            2
         );
 
 
@@ -997,54 +1412,80 @@ function drawRadar() {
             "rgba(77, 220, 200, 0.12)";
 
 
-        ctx.lineWidth = 1;
+        ctx.lineWidth =
+            1;
+
 
         ctx.stroke();
     }
 
 
     // --------------------------------------------------
-    // KRUSTA LĪNIJAS
+    // HORIZONTĀLĀ LĪNIJA
     // --------------------------------------------------
 
     ctx.beginPath();
 
+
     ctx.moveTo(
-        centerX - radius,
+
+        centerX -
+        radius,
+
         centerY
     );
 
+
     ctx.lineTo(
-        centerX + radius,
+
+        centerX +
+        radius,
+
         centerY
     );
+
 
     ctx.strokeStyle =
         "rgba(77, 220, 200, 0.12)";
 
-    ctx.stroke();
-
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        centerX,
-        centerY - radius
-    );
-
-    ctx.lineTo(
-        centerX,
-        centerY + radius
-    );
-
-    ctx.strokeStyle =
-        "rgba(77, 220, 200, 0.12)";
 
     ctx.stroke();
 
 
     // --------------------------------------------------
-    // SWEEP SEKTORA GLOW
+    // VERTIKĀLĀ LĪNIJA
+    // --------------------------------------------------
+
+    ctx.beginPath();
+
+
+    ctx.moveTo(
+
+        centerX,
+
+        centerY -
+        radius
+    );
+
+
+    ctx.lineTo(
+
+        centerX,
+
+        centerY +
+        radius
+    );
+
+
+    ctx.strokeStyle =
+        "rgba(77, 220, 200, 0.12)";
+
+
+    ctx.stroke();
+
+
+    // --------------------------------------------------
+    // SWEEP GLOW
     // --------------------------------------------------
 
     ctx.save();
@@ -1060,11 +1501,14 @@ function drawRadar() {
 
 
     ctx.arc(
+
         centerX,
         centerY,
+
         radius,
 
-        sweepAngle - 0.40,
+        sweepAngle -
+        0.40,
 
         sweepAngle,
 
@@ -1089,19 +1533,25 @@ function drawRadar() {
 
 
     sectorGradient.addColorStop(
+
         0,
+
         "rgba(100, 255, 230, 0.22)"
     );
 
 
     sectorGradient.addColorStop(
+
         0.65,
+
         "rgba(100, 255, 230, 0.08)"
     );
 
 
     sectorGradient.addColorStop(
+
         1,
+
         "rgba(100, 255, 230, 0.015)"
     );
 
@@ -1116,26 +1566,57 @@ function drawRadar() {
     ctx.restore();
 
 
-    // --------------------------------------------------
-    // DOT LOGO
-    // --------------------------------------------------
+    // ==================================================
+    // ABI DOT OBJEKTI
+    // ==================================================
     //
-    // Logo zīmējam PIRMS needle,
-    // lai needle vizuāli iet pāri punktiem.
+    // Abi tiek zīmēti PIRMS needle.
+    //
+    // Tāpēc needle vizuāli iet viņiem pāri.
 
-    if (
-        logoState !== "idle"
-    ) {
+    ctx.save();
 
-        drawDotLogo();
-    }
+    // Drošībai clip uz radara apli.
+    ctx.beginPath();
+
+    ctx.arc(
+
+        centerX,
+        centerY,
+
+        radius - 2,
+
+        0,
+
+        Math.PI * 2
+    );
+
+    ctx.clip();
+
+
+    // Augšējais.
+    drawDotTarget(
+        topData,
+        topState
+    );
+
+
+    // Apakšējais.
+    drawDotTarget(
+        bottomData,
+        bottomState
+    );
+
+
+    ctx.restore();
 
 
     // --------------------------------------------------
     // NEEDLE TRAIL
     // --------------------------------------------------
 
-    const trailLines = 75;
+    const trailLines =
+        75;
 
 
     for (
@@ -1145,7 +1626,8 @@ function drawRadar() {
     ) {
 
         const offset =
-            i * 0.006;
+            i *
+            0.006;
 
 
         const angle =
@@ -1154,21 +1636,28 @@ function drawRadar() {
 
 
         const alpha =
+
             (
                 1 -
-                i / trailLines
+                i /
+                trailLines
             ) *
+
             0.055;
 
 
         const endX =
+
             centerX +
+
             Math.cos(angle) *
             radius;
 
 
         const endY =
+
             centerY +
+
             Math.sin(angle) *
             radius;
 
@@ -1189,6 +1678,7 @@ function drawRadar() {
 
 
         ctx.strokeStyle =
+
             `rgba(
                 85,
                 255,
@@ -1197,7 +1687,8 @@ function drawRadar() {
             )`;
 
 
-        ctx.lineWidth = 2;
+        ctx.lineWidth =
+            2;
 
 
         ctx.stroke();
@@ -1205,18 +1696,28 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // NEEDLE
+    // GALVENĀ NEEDLE
     // --------------------------------------------------
 
     const sweepX =
+
         centerX +
-        Math.cos(sweepAngle) *
+
+        Math.cos(
+            sweepAngle
+        ) *
+
         radius;
 
 
     const sweepY =
+
         centerY +
-        Math.sin(sweepAngle) *
+
+        Math.sin(
+            sweepAngle
+        ) *
+
         radius;
 
 
@@ -1232,13 +1733,17 @@ function drawRadar() {
 
 
     sweepGradient.addColorStop(
+
         0,
+
         "rgba(110, 255, 230, 0.18)"
     );
 
 
     sweepGradient.addColorStop(
+
         1,
+
         "rgba(110, 255, 230, 1)"
     );
 
@@ -1262,7 +1767,8 @@ function drawRadar() {
         sweepGradient;
 
 
-    ctx.lineWidth = 3;
+    ctx.lineWidth =
+        3;
 
 
     ctx.stroke();
@@ -1276,10 +1782,14 @@ function drawRadar() {
 
 
     ctx.arc(
+
         centerX,
         centerY,
+
         5,
+
         0,
+
         Math.PI * 2
     );
 
@@ -1293,159 +1803,12 @@ function drawRadar() {
 
 
 // ======================================================
-// LOGO SCAN LOĢIKA
-// ======================================================
-
-function updateLogoScan(
-    currentTime,
-    deltaTime
-) {
-
-    if (!scanData) {
-
-        return;
-    }
-
-
-    // Cik tālu needle ir no
-    // pirmā reālā logo punkta.
-    const sweepProgress =
-        angularDistanceCW(
-
-            scanData.scanStartAngle,
-
-            sweepAngle
-        );
-
-
-    const isScanningTarget =
-        sweepProgress <=
-        scanData.totalScanSpan;
-
-
-    // --------------------------------------------------
-    // SCANNING
-    // --------------------------------------------------
-
-    if (isScanningTarget) {
-
-        // Tikko sākām skenēt.
-        if (!wasScanningLastFrame) {
-
-            logoState =
-                "scanning";
-
-
-            logoOpacity =
-                1;
-
-
-            currentRevealProgress =
-                0;
-        }
-
-
-        // Needle pozīcija = reveal robeža.
-        currentRevealProgress =
-            Math.min(
-
-                sweepProgress,
-
-                scanData.totalScanSpan
-            );
-    }
-
-
-    // --------------------------------------------------
-    // ĀRPUS LOGO ZONAS
-    // --------------------------------------------------
-
-    else {
-
-        // Needle tikko izgāja cauri pēdējam logo punktam.
-        if (
-            wasScanningLastFrame &&
-            logoState === "scanning"
-        ) {
-
-            // Visi punkti tagad ir atklāti.
-            currentRevealProgress =
-                scanData.totalScanSpan;
-
-
-            // Turam pilnu dot logo.
-            logoState =
-                "holding";
-
-
-            logoOpacity =
-                1;
-
-
-            logoHoldUntil =
-                currentTime +
-                900;
-        }
-
-
-        // --------------------------------------------------
-        // HOLD -> FADE
-        // --------------------------------------------------
-
-        if (
-            logoState === "holding" &&
-            currentTime >
-            logoHoldUntil
-        ) {
-
-            logoState =
-                "fading";
-        }
-
-
-        // --------------------------------------------------
-        // FADE
-        // --------------------------------------------------
-
-        if (
-            logoState === "fading"
-        ) {
-
-            logoOpacity -=
-                0.52 *
-                deltaTime;
-
-
-            if (
-                logoOpacity <= 0
-            ) {
-
-                logoOpacity =
-                    0;
-
-
-                logoState =
-                    "idle";
-
-
-                currentRevealProgress =
-                    0;
-            }
-        }
-    }
-
-
-    wasScanningLastFrame =
-        isScanningTarget;
-}
-
-
-// ======================================================
 // GALVENĀ ANIMĀCIJA
 // ======================================================
 
 function animate(currentTime) {
 
+    // Pirmais frame.
     if (!previousTime) {
 
         previousTime =
@@ -1454,10 +1817,12 @@ function animate(currentTime) {
 
 
     const deltaTime =
+
         (
             currentTime -
             previousTime
         ) /
+
         1000;
 
 
@@ -1466,10 +1831,11 @@ function animate(currentTime) {
 
 
     // --------------------------------------------------
-    // NEEDLE KUSTĪBA
+    // ROTĒJAM NEEDLE
     // --------------------------------------------------
 
     sweepAngle +=
+
         sweepSpeed *
         deltaTime;
 
@@ -1484,12 +1850,34 @@ function animate(currentTime) {
     }
 
 
-    // --------------------------------------------------
-    // LOGO SCAN
-    // --------------------------------------------------
+    // ==================================================
+    // AUGŠĒJAIS TARGET
+    // ==================================================
 
-    updateLogoScan(
+    updateTarget(
+
+        topData,
+
+        topState,
+
         currentTime,
+
+        deltaTime
+    );
+
+
+    // ==================================================
+    // APAKŠĒJAIS TARGET
+    // ==================================================
+
+    updateTarget(
+
+        bottomData,
+
+        bottomState,
+
+        currentTime,
+
         deltaTime
     );
 
@@ -1499,9 +1887,12 @@ function animate(currentTime) {
     // --------------------------------------------------
 
     ctx.clearRect(
+
         0,
         0,
+
         window.innerWidth,
+
         window.innerHeight
     );
 
@@ -1520,15 +1911,21 @@ function animate(currentTime) {
 
 
 // ======================================================
-// LOGO LOAD
+// IMAGE LOAD
 // ======================================================
 
-logo.onload = function () {
+topImage.onload =
+    function () {
 
-    // Kad SVG gatavs,
-    // pārvēršam to radar punktos.
-    buildLogoScanData();
-};
+        buildTopData();
+    };
+
+
+bottomImage.onload =
+    function () {
+
+        buildBottomData();
+    };
 
 
 // ======================================================
