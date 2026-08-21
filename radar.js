@@ -47,7 +47,7 @@ const targetAngle = -Math.PI / 2;
 const targetDistanceFactor = 0.58;
 
 // Maksimālais logo platums.
-const maxLogoWidth = 300;
+const maxLogoWidth = 400;
 
 // Logo platums attiecībā pret ekrānu.
 const logoWidthFactor = 0.28;
