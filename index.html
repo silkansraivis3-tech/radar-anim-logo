@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
 
-    <!-- Pareizs scaling planšetēm -->
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0, viewport-fit=cover"
@@ -17,137 +16,252 @@
 
 <body>
 
-    <!--
-        Visa aplikācija dzīvo šajā shell.
-        Vēlāk šeit varēsim vadīt:
-        radar / course / screensaver / session state.
-    -->
     <main id="appShell">
-
 
         <!-- ==================================================
              RADAR SCREEN
         =================================================== -->
-
         <section id="radarScreen">
 
-            <!-- Esošā radar animācija -->
-            <canvas id="radarCanvas"></canvas>
+            <!-- Background -->
+            <div class="bridge-background"></div>
 
-
-            <!--
-                Session panelis.
-                Sākumā paslēpts.
-
-                Tas parādīsies pēc bottom dotted object
-                pirmā scan/fade cikla.
-            -->
-            <div
-                id="sessionPanel"
-                class="session-panel"
-            >
-
-                <!-- Dekoratīvās corner detaļas -->
-                <span class="corner corner-tl"></span>
-                <span class="corner corner-tr"></span>
-                <span class="corner corner-bl"></span>
-                <span class="corner corner-br"></span>
-
-
-                <!-- Panel top line -->
-                <div class="panel-header">
-
-                    <span class="panel-header-line"></span>
-
-                    <span class="panel-header-title">
-                        SESSION ACCESS
-                    </span>
-
-                    <span class="panel-header-line"></span>
-
+            <!-- Top status -->
+            <div class="console-status console-status-left">
+                <div class="status-item">
+                    <span class="status-light"></span>
+                    <span>SYSTEM READY</span>
                 </div>
 
+                <div class="status-item">
+                    <span class="status-light"></span>
+                    <span>LOCAL MODE</span>
+                </div>
+            </div>
 
-                <!-- Status -->
-                <div class="session-status-area">
-
-                    <div
-                        id="sessionStatus"
-                        class="session-status"
-                    >
-                        ENTER SESSION CODE
-                    </div>
-
-                    <div
-                        id="sessionStatusSub"
-                        class="session-status-sub"
-                    >
-                        INSTRUCTOR ACCESS KEY REQUIRED
-                    </div>
-
+            <div class="console-status console-status-right">
+                <div class="status-value">
+                    TRAINING TERMINAL
                 </div>
 
+                <div class="status-small">
+                    OFFLINE READY
+                </div>
+            </div>
 
-                <!-- Session code input -->
-                <div
-                    id="inputArea"
-                    class="input-area"
-                >
 
-                    <input
-                        id="sessionCodeInput"
-                        type="text"
-                        inputmode="text"
-                        autocomplete="off"
-                        autocapitalize="characters"
-                        spellcheck="false"
-                        maxlength="12"
-                        placeholder="------"
-                        aria-label="Session code"
-                    >
+            <!-- Decorative side control banks -->
+            <div class="console-bank console-bank-left">
 
+                <div class="bank-label">
+                    NAV PANEL
                 </div>
 
-
-                <!-- Processing indicator -->
-                <div
-                    id="processingIndicator"
-                    class="processing-indicator"
-                >
-
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-
+                <div class="bank-row">
+                    <span class="bank-led on"></span>
+                    <span class="bank-button"></span>
+                    <span class="bank-button"></span>
                 </div>
 
+                <div class="bank-row">
+                    <span class="bank-led dim"></span>
+                    <span class="bank-button"></span>
+                    <span class="bank-button"></span>
+                </div>
 
-                <!-- ENTER button -->
-                <button
-                    id="enterButton"
-                    class="enter-button"
-                    type="button"
-                >
-                    <span>ENTER</span>
-                </button>
-
-
-                <div class="panel-footer">
-                    TRAINING SESSION TERMINAL
+                <div class="bank-row">
+                    <span class="bank-led on"></span>
+                    <span class="bank-button wide"></span>
                 </div>
 
             </div>
 
 
-            <!--
-                Success transition ring.
-                Parādīsies ACCESS GRANTED brīdī.
-            -->
+            <div class="console-bank console-bank-right">
+
+                <div class="bank-label">
+                    AUX PANEL
+                </div>
+
+                <div class="bank-row">
+                    <span class="bank-button"></span>
+                    <span class="bank-button"></span>
+                    <span class="bank-led on"></span>
+                </div>
+
+                <div class="bank-row">
+                    <span class="bank-button"></span>
+                    <span class="bank-button"></span>
+                    <span class="bank-led dim"></span>
+                </div>
+
+                <div class="bank-row">
+                    <span class="bank-button wide"></span>
+                    <span class="bank-led on"></span>
+                </div>
+
+            </div>
+
+
+            <!-- Bottom decorative panels -->
+            <div class="bottom-console bottom-console-left">
+                <div class="bottom-console-title">
+                    SIGNAL
+                </div>
+
+                <div class="bottom-console-strip">
+                    <span class="micro-led on"></span>
+                    <span class="micro-led dim"></span>
+                    <span class="micro-led on"></span>
+                    <span class="micro-led dim"></span>
+                    <span class="micro-led on"></span>
+                </div>
+            </div>
+
+            <div class="bottom-console bottom-console-right">
+                <div class="bottom-console-title">
+                    STATUS
+                </div>
+
+                <div class="bottom-console-strip">
+                    <span class="micro-led dim"></span>
+                    <span class="micro-led on"></span>
+                    <span class="micro-led dim"></span>
+                    <span class="micro-led on"></span>
+                    <span class="micro-led dim"></span>
+                </div>
+            </div>
+
+
+            <!-- Radar bezel -->
+            <div class="radar-bezel">
+                <span class="bezel-screw screw-1"></span>
+                <span class="bezel-screw screw-2"></span>
+                <span class="bezel-screw screw-3"></span>
+                <span class="bezel-screw screw-4"></span>
+            </div>
+
+            <!-- Radar canvas -->
+            <canvas id="radarCanvas"></canvas>
+
+
+            <!-- Wake hint -->
+            <div
+                id="wakeHint"
+                class="wake-hint"
+            >
+                <span class="wake-dot"></span>
+                <span>TOUCH SCREEN TO ACCESS SESSION</span>
+            </div>
+
+
+            <!-- ==================================================
+                 SESSION ACCESS
+                 Iebūvēts radarā, nevis popup box
+            =================================================== -->
+            <div
+                id="sessionAccess"
+                class="session-access"
+            >
+
+                <div class="access-heading">
+                    <span class="heading-line"></span>
+                    <span class="heading-text">
+                        SESSION ACCESS
+                    </span>
+                    <span class="heading-line"></span>
+                </div>
+
+                <div
+                    id="sessionStatus"
+                    class="session-status"
+                >
+                    ENTER INSTRUCTOR CODE
+                </div>
+
+                <div
+                    id="sessionSubStatus"
+                    class="session-sub-status"
+                >
+                    USE THE SESSION KEY PROVIDED BY YOUR INSTRUCTOR
+                </div>
+
+
+                <!-- slim radar-style field -->
+                <div class="session-code-block">
+
+                    <label
+                        for="sessionCodeInput"
+                        class="code-field-label"
+                    >
+                        SESSION CODE
+                    </label>
+
+                    <div class="hud-input-wrap">
+
+                        <span class="hud-bracket hud-bracket-left"></span>
+                        <span class="hud-bracket hud-bracket-right"></span>
+
+                        <input
+                            id="sessionCodeInput"
+                            type="text"
+                            inputmode="text"
+                            enterkeyhint="go"
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="characters"
+                            spellcheck="false"
+                            maxlength="12"
+                            placeholder="TAP TO ENTER"
+                        >
+
+                        <div class="hud-input-line"></div>
+                    </div>
+
+                    <div class="tap-instruction">
+                        TAP FIELD TO ENTER CODE
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="processingIndicator"
+                    class="processing-indicator"
+                >
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+
+                <!-- integrated confirm -->
+                <button
+                    id="confirmButton"
+                    class="confirm-button"
+                    type="button"
+                >
+                    <span class="confirm-line"></span>
+                    <span class="confirm-text">
+                        <span class="confirm-icon">&gt;</span>
+                        CONFIRM SESSION
+                    </span>
+                    <span class="confirm-line"></span>
+                </button>
+
+            </div>
+
+
+            <div
+                id="accessFlash"
+                class="access-flash"
+            ></div>
+
             <div
                 id="transitionRing"
                 class="transition-ring"
@@ -157,154 +271,158 @@
 
 
         <!-- ==================================================
-             FAKE COURSE SCREEN
-             
-             Pagaidām tikai UX eksperimentam.
-             Vēlāk šeit būs īstais course UI.
+             COURSE SCREEN
         =================================================== -->
-
         <section
             id="courseScreen"
             class="course-screen"
         >
 
-            <div class="course-background-grid"></div>
+            <div class="course-console-background"></div>
 
+            <div class="course-system-strip">
 
-            <header class="course-header">
-
-                <div>
-
-                    <div class="course-eyebrow">
-                        ACTIVE TRAINING SESSION
-                    </div>
-
-                    <h1>
-                        Course workspace
-                    </h1>
-
+                <div class="system-strip-left">
+                    <span class="status-light"></span>
+                    <span>TRAINING SESSION ACTIVE</span>
                 </div>
 
-
                 <div
-                    id="activeSessionBadge"
+                    id="sessionBadge"
                     class="session-badge"
                 >
                     SESSION
                 </div>
 
-            </header>
+            </div>
+
+            <div class="course-shell">
+
+                <header class="course-header">
+
+                    <div>
+                        <div class="course-label">
+                            ASSIGNED COURSE
+                        </div>
+
+                        <h1 id="courseTitle">
+                            Mathematics
+                        </h1>
+
+                        <p>
+                            Select the training activity you want to open.
+                        </p>
+                    </div>
+
+                </header>
 
 
-            <div class="course-content">
+                <div class="activity-grid">
 
-                <div class="course-intro">
+                    <button class="activity-card">
 
-                    <p class="course-kicker">
-                        SESSION VERIFIED
-                    </p>
+                        <div class="activity-top">
+                            <span class="activity-number">01</span>
+                            <span class="activity-state">READY</span>
+                        </div>
 
-                    <h2>
-                        Training materials ready
-                    </h2>
+                        <div class="activity-content">
+                            <div class="activity-icon">Q</div>
 
-                    <p>
-                        Only materials assigned to this session
-                        would be available here.
-                    </p>
+                            <div>
+                                <h2>Knowledge Check</h2>
+                                <p>Review core course knowledge.</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-bottom">
+                            <span>10 QUESTIONS</span>
+                            <span class="activity-arrow">→</span>
+                        </div>
+
+                    </button>
+
+
+                    <button class="activity-card">
+
+                        <div class="activity-top">
+                            <span class="activity-number">02</span>
+                            <span class="activity-state">READY</span>
+                        </div>
+
+                        <div class="activity-content">
+                            <div class="activity-icon">P</div>
+
+                            <div>
+                                <h2>Practical Exercise</h2>
+                                <p>Interactive training activity.</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-bottom">
+                            <span>PRACTICE</span>
+                            <span class="activity-arrow">→</span>
+                        </div>
+
+                    </button>
+
+
+                    <button class="activity-card">
+
+                        <div class="activity-top">
+                            <span class="activity-number">03</span>
+                            <span class="activity-state">READY</span>
+                        </div>
+
+                        <div class="activity-content">
+                            <div class="activity-icon">T</div>
+
+                            <div>
+                                <h2>Session Test</h2>
+                                <p>Complete your assigned assessment.</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-bottom">
+                            <span>ASSESSMENT</span>
+                            <span class="activity-arrow">→</span>
+                        </div>
+
+                    </button>
+
+
+                    <button class="activity-card">
+
+                        <div class="activity-top">
+                            <span class="activity-number">04</span>
+                            <span class="activity-state">READY</span>
+                        </div>
+
+                        <div class="activity-content">
+                            <div class="activity-icon">M</div>
+
+                            <div>
+                                <h2>Course Materials</h2>
+                                <p>Open handouts and learning resources.</p>
+                            </div>
+                        </div>
+
+                        <div class="activity-bottom">
+                            <span>MATERIALS</span>
+                            <span class="activity-arrow">→</span>
+                        </div>
+
+                    </button>
 
                 </div>
 
 
-                <div class="course-cards">
-
-                    <button class="course-card">
-
-                        <span class="card-number">
-                            01
-                        </span>
-
-                        <span class="card-content">
-
-                            <strong>
-                                Training Tasks
-                            </strong>
-
-                            <small>
-                                Practical exercises and activities
-                            </small>
-
-                        </span>
-
-                        <span class="card-arrow">
-                            →
-                        </span>
-
-                    </button>
-
-
-                    <button class="course-card">
-
-                        <span class="card-number">
-                            02
-                        </span>
-
-                        <span class="card-content">
-
-                            <strong>
-                                Course Materials
-                            </strong>
-
-                            <small>
-                                Handouts and learning resources
-                            </small>
-
-                        </span>
-
-                        <span class="card-arrow">
-                            →
-                        </span>
-
-                    </button>
-
-
-                    <button class="course-card">
-
-                        <span class="card-number">
-                            03
-                        </span>
-
-                        <span class="card-content">
-
-                            <strong>
-                                Assessment
-                            </strong>
-
-                            <small>
-                                Tests assigned to this session
-                            </small>
-
-                        </span>
-
-                        <span class="card-arrow">
-                            →
-                        </span>
-
-                    </button>
-
-                </div>
-
-
-                <!--
-                    Tikai mūsu testēšanai.
-                    Vēlāk šo pogu izmetīsim.
-                -->
                 <button
                     id="resetDemoButton"
                     class="reset-demo"
                     type="button"
                 >
-                    RESET DEMO
+                    RESET PROTOTYPE
                 </button>
 
             </div>
@@ -312,7 +430,6 @@
         </section>
 
     </main>
-
 
     <script src="radar.js"></script>
 

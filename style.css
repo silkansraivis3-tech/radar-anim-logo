@@ -1,11 +1,13 @@
 /* =====================================================
-   BASIC RESET
+   RESET
 ===================================================== */
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+
+    -webkit-tap-highlight-color: transparent;
 }
 
 
@@ -13,43 +15,32 @@ html,
 body {
     width: 100%;
     height: 100%;
+    height: 100dvh;
+
+    overflow: hidden;
 }
 
 
 body {
-    overflow: hidden;
+    background: #02090c;
 
-    background:
-        radial-gradient(
-            circle at center,
-            #102b35 0%,
-            #07171d 55%,
-            #02090c 100%
-        );
+    color: #dffff8;
 
-    /*
-        Bahnschrift labi izskatās uz Windows
-        un dod tādu industrial/maritime terminal sajūtu.
-    */
     font-family:
         "Bahnschrift",
+        "Roboto Condensed",
         "Arial Narrow",
         Arial,
         sans-serif;
-
-    color: #dffef8;
 }
 
-
-/* =====================================================
-   APP SHELL
-===================================================== */
 
 #appShell {
     position: relative;
 
     width: 100%;
     height: 100%;
+    height: 100dvh;
 
     overflow: hidden;
 
@@ -63,275 +54,67 @@ body {
 
 #radarScreen {
     position: absolute;
-    inset: 0;
 
-    z-index: 1;
+    inset: 0;
 
     overflow: hidden;
 
-    background:
-        radial-gradient(
-            circle at center,
-            #102b35 0%,
-            #07171d 55%,
-            #02090c 100%
-        );
+    background: #030c10;
 
-    transition:
-        opacity 0.8s ease,
-        filter 0.8s ease;
+    touch-action: manipulation;
 }
 
 
-#radarCanvas {
+/* =====================================================
+   BRIDGE PANEL BACKGROUND
+===================================================== */
+
+.bridge-background {
     position: absolute;
+
     inset: 0;
 
-    display: block;
-
-    width: 100%;
-    height: 100%;
-}
-
-
-/* =====================================================
-   SESSION PANEL
-===================================================== */
-
-.session-panel {
-    position: absolute;
-
-    /*
-        Apakšējā radara daļa.
-        Ja vēlāk vajag zemāk/augstāk,
-        regulē tikai šo top.
-    */
-    top: 67%;
-    left: 50%;
-
-    width: min(330px, 42vw);
-
-    padding:
-        18px
-        24px
-        16px;
-
-    transform:
-        translate(-50%, 35px)
-        scale(0.96);
-
-    opacity: 0;
-
     pointer-events: none;
-
-    z-index: 10;
-
 
     background:
-        linear-gradient(
-            180deg,
-            rgba(7, 28, 34, 0.90),
-            rgba(2, 14, 18, 0.94)
+
+        radial-gradient(
+            circle at center,
+            rgba(13, 48, 56, 0.84) 0%,
+            rgba(5, 20, 25, 0.78) 47%,
+            rgba(2, 10, 13, 0.97) 100%
+        ),
+
+        repeating-linear-gradient(
+            90deg,
+            rgba(130, 210, 200, 0.014) 0px,
+            rgba(130, 210, 200, 0.014) 1px,
+            transparent 1px,
+            transparent 70px
+        ),
+
+        repeating-linear-gradient(
+            0deg,
+            rgba(130, 210, 200, 0.011) 0px,
+            rgba(130, 210, 200, 0.011) 1px,
+            transparent 1px,
+            transparent 70px
         );
-
-
-    border:
-        1px solid
-        rgba(103, 255, 225, 0.30);
-
-
-    box-shadow:
-        0 0 30px
-        rgba(63, 255, 218, 0.06),
-        inset 0 0 30px
-        rgba(63, 255, 218, 0.025);
-
-
-    backdrop-filter:
-        blur(8px);
-
-
-    transition:
-        opacity 0.7s ease,
-        transform 0.7s
-        cubic-bezier(0.16, 1, 0.3, 1),
-        border-color 0.35s ease,
-        box-shadow 0.35s ease;
 }
 
 
-/* Panel visible */
-.session-panel.visible {
-    opacity: 1;
-
-    transform:
-        translate(-50%, 0)
-        scale(1);
-
-    pointer-events: auto;
-}
-
-
-/* Processing stāvoklī panelis kļūst nedaudz spilgtāks */
-.session-panel.processing {
-    border-color:
-        rgba(103, 255, 225, 0.60);
-
-    box-shadow:
-        0 0 38px
-        rgba(63, 255, 218, 0.11),
-        inset 0 0 34px
-        rgba(63, 255, 218, 0.04);
-}
-
-
-/* Success */
-.session-panel.success {
-    border-color:
-        rgba(153, 255, 226, 0.88);
-
-    box-shadow:
-        0 0 48px
-        rgba(74, 255, 215, 0.16),
-        inset 0 0 35px
-        rgba(74, 255, 215, 0.06);
-}
-
-
-/* Error */
-.session-panel.denied {
-    animation:
-        accessDeniedShake
-        0.32s
-        ease;
-}
-
-
-@keyframes accessDeniedShake {
-
-    0% {
-        transform:
-            translate(-50%, 0);
-    }
-
-    25% {
-        transform:
-            translate(
-                calc(-50% - 5px),
-                0
-            );
-    }
-
-    50% {
-        transform:
-            translate(
-                calc(-50% + 5px),
-                0
-            );
-    }
-
-    75% {
-        transform:
-            translate(
-                calc(-50% - 3px),
-                0
-            );
-    }
-
-    100% {
-        transform:
-            translate(-50%, 0);
-    }
-}
-
-
-/* =====================================================
-   CORNER DETAILS
-===================================================== */
-
-.corner {
-    position: absolute;
-
-    width: 16px;
-    height: 16px;
-
-    pointer-events: none;
-}
-
-
-.corner::before,
-.corner::after {
+/*
+   Panel seam augšā + apakšā.
+*/
+.bridge-background::before {
     content: "";
 
     position: absolute;
 
-    background:
-        rgba(113, 255, 228, 0.75);
-}
+    left: 0;
+    right: 0;
 
-
-.corner::before {
-    width: 16px;
-    height: 1px;
-}
-
-
-.corner::after {
-    width: 1px;
-    height: 16px;
-}
-
-
-.corner-tl {
-    top: -1px;
-    left: -1px;
-}
-
-
-.corner-tr {
-    top: -1px;
-    right: -1px;
-
-    transform:
-        rotate(90deg);
-}
-
-
-.corner-br {
-    right: -1px;
-    bottom: -1px;
-
-    transform:
-        rotate(180deg);
-}
-
-
-.corner-bl {
-    left: -1px;
-    bottom: -1px;
-
-    transform:
-        rotate(270deg);
-}
-
-
-/* =====================================================
-   PANEL HEADER
-===================================================== */
-
-.panel-header {
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    margin-bottom: 15px;
-}
-
-
-.panel-header-line {
-    flex: 1;
+    top: 14%;
 
     height: 1px;
 
@@ -339,79 +122,1480 @@ body {
         linear-gradient(
             90deg,
             transparent,
-            rgba(106, 255, 226, 0.55)
+            rgba(106, 214, 199, 0.15),
+            transparent
+        );
+
+    box-shadow:
+        0 76vh 0
+        rgba(106, 214, 199, 0.09);
+}
+
+
+/*
+   Tumšāki fiziska paneļa sāni.
+*/
+.bridge-background::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 0, 0, 0.32) 0%,
+            rgba(0, 0, 0, 0.10) 10%,
+            transparent 18%,
+            transparent 82%,
+            rgba(0, 0, 0, 0.10) 90%,
+            rgba(0, 0, 0, 0.32) 100%
         );
 }
 
 
-.panel-header-line:last-child {
+/* =====================================================
+   RADAR CANVAS
+===================================================== */
+
+#radarCanvas {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 3;
+
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   RADAR BEZEL
+===================================================== */
+
+.radar-bezel {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    /*
+        Canvas radar radius ir ~40vmin.
+        Tāpēc bezel ~82vmin.
+    */
+    width: 82vmin;
+
+    aspect-ratio: 1;
+
+    transform:
+        translate(
+            -50%,
+            -50%
+        );
+
+    z-index: 2;
+
+    border-radius: 50%;
+
+    border:
+        10px solid
+        rgba(3, 15, 18, 0.76);
+
+    outline:
+        1px solid
+        rgba(103, 255, 226, 0.16);
+
+    box-shadow:
+
+        inset 0 0 0 2px
+        rgba(126, 255, 232, 0.035),
+
+        inset 0 0 30px
+        rgba(0, 0, 0, 0.82),
+
+        0 0 0 1px
+        rgba(0, 0, 0, 0.88),
+
+        0 18px 50px
+        rgba(0, 0, 0, 0.46);
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   BEZEL SCREWS
+===================================================== */
+
+.bezel-screw {
+    position: absolute;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            #506669 0%,
+            #18282b 50%,
+            #050c0e 100%
+        );
+
+    border:
+        1px solid
+        rgba(150, 200, 194, 0.20);
+
+    box-shadow:
+        0 0 7px
+        rgba(90, 255, 226, 0.05);
+}
+
+
+.screw-1 {
+    left: 14%;
+    top: 14%;
+}
+
+
+.screw-2 {
+    right: 14%;
+    top: 14%;
+}
+
+
+.screw-3 {
+    left: 14%;
+    bottom: 14%;
+}
+
+
+.screw-4 {
+    right: 14%;
+    bottom: 14%;
+}
+
+
+/* =====================================================
+   TOP SYSTEM STATUS
+===================================================== */
+
+.console-status {
+    position: absolute;
+
+    top:
+        clamp(
+            24px,
+            4vh,
+            52px
+        );
+
+    z-index: 4;
+
+    display: flex;
+
+    gap: 18px;
+
+    align-items: center;
+
+    color:
+        rgba(
+            162,
+            223,
+            212,
+            0.42
+        );
+
+    font-size:
+        clamp(
+            9px,
+            1vw,
+            11px
+        );
+
+    letter-spacing: 0.14em;
+
+    pointer-events: none;
+}
+
+
+.console-status-left {
+    left:
+        clamp(
+            24px,
+            4vw,
+            60px
+        );
+}
+
+
+.console-status-right {
+    right:
+        clamp(
+            24px,
+            4vw,
+            60px
+        );
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    gap: 3px;
+}
+
+
+.status-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+}
+
+
+.status-light {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #68ffe0;
+
+    box-shadow:
+        0 0 8px
+        rgba(
+            104,
+            255,
+            224,
+            0.45
+        );
+
+    /*
+        Ļoti lēns system status pulse.
+    */
+    animation:
+        systemStatusPulse
+        2.8s
+        ease-in-out
+        infinite;
+}
+
+
+.status-item:nth-child(2)
+.status-light {
+    animation-delay: -1.35s;
+}
+
+
+@keyframes systemStatusPulse {
+
+    0%,
+    100% {
+        opacity: 0.55;
+
+        box-shadow:
+            0 0 5px
+            rgba(
+                104,
+                255,
+                224,
+                0.26
+            );
+    }
+
+    50% {
+        opacity: 1;
+
+        box-shadow:
+            0 0 13px
+            rgba(
+                104,
+                255,
+                224,
+                0.68
+            );
+    }
+}
+
+
+.status-value {
+    color:
+        rgba(
+            178,
+            238,
+            227,
+            0.55
+        );
+}
+
+
+.status-small {
+    font-size: 8px;
+
+    opacity: 0.58;
+}
+
+
+/* =====================================================
+   SIDE CONTROL BANKS
+===================================================== */
+
+.console-bank {
+    position: absolute;
+
+    z-index: 4;
+
+    width:
+        clamp(
+            110px,
+            12vw,
+            160px
+        );
+
+    padding: 12px;
+
+    border:
+        1px solid
+        rgba(
+            105,
+            255,
+            226,
+            0.10
+        );
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(5, 20, 24, 0.62),
+            rgba(2, 11, 14, 0.74)
+        );
+
+    box-shadow:
+        inset 0 0 20px
+        rgba(0, 0, 0, 0.38),
+
+        0 6px 20px
+        rgba(0, 0, 0, 0.14);
+
+    pointer-events: none;
+}
+
+
+.console-bank-left {
+    left:
+        clamp(
+            20px,
+            3vw,
+            40px
+        );
+
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+}
+
+
+.console-bank-right {
+    right:
+        clamp(
+            20px,
+            3vw,
+            40px
+        );
+
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+}
+
+
+.bank-label {
+    margin-bottom: 10px;
+
+    color:
+        rgba(
+            155,
+            235,
+            220,
+            0.40
+        );
+
+    font-size: 9px;
+
+    letter-spacing: 0.16em;
+}
+
+
+.bank-row {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 9px;
+}
+
+
+/* =====================================================
+   FAKE PANEL BUTTONS
+===================================================== */
+
+.bank-button {
+    position: relative;
+
+    width: 26px;
+    height: 18px;
+
+    border:
+        1px solid
+        rgba(
+            111,
+            255,
+            226,
+            0.12
+        );
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(15, 56, 62, 0.30),
+            rgba(3, 20, 24, 0.46)
+        );
+
+    box-shadow:
+        inset 0 0 8px
+        rgba(0, 0, 0, 0.25);
+}
+
+
+.bank-button.wide {
+    width: 62px;
+}
+
+
+/*
+   Dažiem fake controls lēns status glow.
+*/
+.console-bank-left
+.bank-row:nth-child(2)
+.bank-button:last-child {
+
+    animation:
+        buttonSystemGlow
+        4.4s
+        ease-in-out
+        infinite;
+}
+
+
+.console-bank-left
+.bank-row:nth-child(4)
+.bank-button {
+
+    animation:
+        buttonSystemGlow
+        5.1s
+        ease-in-out
+        infinite;
+
+    animation-delay:
+        -2.3s;
+}
+
+
+.console-bank-right
+.bank-row:nth-child(3)
+.bank-button:first-child {
+
+    animation:
+        buttonSystemGlow
+        4.8s
+        ease-in-out
+        infinite;
+
+    animation-delay:
+        -1.6s;
+}
+
+
+@keyframes buttonSystemGlow {
+
+    0%,
+    75%,
+    100% {
+        border-color:
+            rgba(
+                111,
+                255,
+                226,
+                0.11
+            );
+
+        background:
+            rgba(
+                7,
+                35,
+                39,
+                0.28
+            );
+    }
+
+    82% {
+        border-color:
+            rgba(
+                111,
+                255,
+                226,
+                0.32
+            );
+
+        background:
+            rgba(
+                15,
+                69,
+                67,
+                0.32
+            );
+    }
+}
+
+
+/* =====================================================
+   BANK LEDs
+===================================================== */
+
+.bank-led {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+}
+
+
+.bank-led.on {
+    background: #72ffe0;
+
+    box-shadow:
+        0 0 10px
+        rgba(
+            114,
+            255,
+            224,
+            0.55
+        );
+
+    animation:
+        ledSlowPulse
+        2.2s
+        ease-in-out
+        infinite;
+}
+
+
+.bank-led.dim {
+    background:
+        rgba(
+            96,
+            140,
+            135,
+            0.40
+        );
+
+    animation:
+        dimLedBlink
+        4.6s
+        ease-in-out
+        infinite;
+}
+
+
+/*
+   Kreisajā panelī gaismas nav sinhronas.
+*/
+.console-bank-left
+.bank-row:nth-child(2)
+.bank-led {
+
+    animation-duration: 1.9s;
+}
+
+
+.console-bank-left
+.bank-row:nth-child(3)
+.bank-led {
+
+    animation-delay: -1.8s;
+}
+
+
+.console-bank-left
+.bank-row:nth-child(4)
+.bank-led {
+
+    animation-duration: 3.1s;
+
+    animation-delay: -0.8s;
+}
+
+
+/*
+   Labā puse citā ritmā.
+*/
+.console-bank-right
+.bank-row:nth-child(2)
+.bank-led {
+
+    animation-duration: 2.7s;
+
+    animation-delay: -1.2s;
+}
+
+
+.console-bank-right
+.bank-row:nth-child(3)
+.bank-led {
+
+    animation-duration: 4.1s;
+
+    animation-delay: -2.7s;
+}
+
+
+.console-bank-right
+.bank-row:nth-child(4)
+.bank-led {
+
+    animation-duration: 1.7s;
+
+    animation-delay: -0.4s;
+}
+
+
+@keyframes ledSlowPulse {
+
+    0%,
+    100% {
+        opacity: 0.42;
+
+        box-shadow:
+            0 0 5px
+            rgba(
+                114,
+                255,
+                224,
+                0.22
+            );
+    }
+
+    50% {
+        opacity: 1;
+
+        box-shadow:
+            0 0 12px
+            rgba(
+                114,
+                255,
+                224,
+                0.70
+            );
+    }
+}
+
+
+@keyframes dimLedBlink {
+
+    0%,
+    70%,
+    100% {
+        opacity: 0.28;
+    }
+
+    76% {
+        opacity: 0.85;
+
+        background:
+            rgba(
+                103,
+                255,
+                226,
+                0.55
+            );
+    }
+
+    82% {
+        opacity: 0.30;
+    }
+}
+
+
+/* =====================================================
+   BOTTOM CONSOLE
+===================================================== */
+
+.bottom-console {
+    position: absolute;
+
+    z-index: 4;
+
+    bottom:
+        clamp(
+            22px,
+            4vh,
+            50px
+        );
+
+    width:
+        clamp(
+            130px,
+            15vw,
+            180px
+        );
+
+    padding:
+        10px
+        12px;
+
+    border:
+        1px solid
+        rgba(
+            105,
+            255,
+            226,
+            0.08
+        );
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(5, 20, 24, 0.52),
+            rgba(2, 11, 14, 0.70)
+        );
+
+    pointer-events: none;
+}
+
+
+.bottom-console-left {
+    left:
+        clamp(
+            26px,
+            4vw,
+            56px
+        );
+}
+
+
+.bottom-console-right {
+    right:
+        clamp(
+            26px,
+            4vw,
+            56px
+        );
+}
+
+
+.bottom-console-title {
+    margin-bottom: 8px;
+
+    color:
+        rgba(
+            155,
+            235,
+            220,
+            0.38
+        );
+
+    font-size: 9px;
+
+    letter-spacing: 0.15em;
+}
+
+
+.bottom-console-strip {
+    display: flex;
+
+    gap: 8px;
+}
+
+
+/* =====================================================
+   MICRO LEDs
+===================================================== */
+
+.micro-led {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+}
+
+
+.micro-led.on {
+    background: #72ffe0;
+
+    box-shadow:
+        0 0 8px
+        rgba(
+            114,
+            255,
+            224,
+            0.50
+        );
+
+    animation:
+        microLedPulse
+        2.1s
+        ease-in-out
+        infinite;
+}
+
+
+.micro-led.dim {
+    background:
+        rgba(
+            96,
+            140,
+            135,
+            0.36
+        );
+
+    animation:
+        microLedDim
+        4.2s
+        ease-in-out
+        infinite;
+}
+
+
+/*
+   SIGNAL kreisajā pusē.
+*/
+.bottom-console-left
+.micro-led:nth-child(1) {
+
+    animation-duration: 1.6s;
+}
+
+
+.bottom-console-left
+.micro-led:nth-child(2) {
+
+    animation-delay: -2.1s;
+}
+
+
+.bottom-console-left
+.micro-led:nth-child(3) {
+
+    animation-duration: 2.8s;
+
+    animation-delay: -0.6s;
+}
+
+
+.bottom-console-left
+.micro-led:nth-child(4) {
+
+    animation-duration: 3.5s;
+
+    animation-delay: -1.4s;
+}
+
+
+.bottom-console-left
+.micro-led:nth-child(5) {
+
+    animation-duration: 1.9s;
+
+    animation-delay: -0.9s;
+}
+
+
+/*
+   STATUS labajā pusē citā ritmā.
+*/
+.bottom-console-right
+.micro-led:nth-child(1) {
+
+    animation-delay: -1.2s;
+}
+
+
+.bottom-console-right
+.micro-led:nth-child(2) {
+
+    animation-duration: 2.6s;
+}
+
+
+.bottom-console-right
+.micro-led:nth-child(3) {
+
+    animation-duration: 3.8s;
+
+    animation-delay: -2.4s;
+}
+
+
+.bottom-console-right
+.micro-led:nth-child(4) {
+
+    animation-duration: 1.7s;
+
+    animation-delay: -0.5s;
+}
+
+
+.bottom-console-right
+.micro-led:nth-child(5) {
+
+    animation-duration: 4.4s;
+
+    animation-delay: -3.1s;
+}
+
+
+@keyframes microLedPulse {
+
+    0%,
+    100% {
+        opacity: 0.34;
+
+        box-shadow:
+            0 0 3px
+            rgba(
+                114,
+                255,
+                224,
+                0.18
+            );
+    }
+
+    48% {
+        opacity: 1;
+
+        box-shadow:
+            0 0 10px
+            rgba(
+                114,
+                255,
+                224,
+                0.70
+            );
+    }
+}
+
+
+@keyframes microLedDim {
+
+    0%,
+    68%,
+    100% {
+        opacity: 0.22;
+    }
+
+    73% {
+        opacity: 0.70;
+
+        background:
+            rgba(
+                103,
+                255,
+                226,
+                0.50
+            );
+    }
+
+    78% {
+        opacity: 0.24;
+    }
+}
+
+
+/* =====================================================
+   WAKE HINT
+===================================================== */
+
+.wake-hint {
+    position: absolute;
+
+    left: 50%;
+
+    bottom:
+        clamp(
+            28px,
+            5vh,
+            60px
+        );
+
+    z-index: 8;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    transform:
+        translateX(-50%);
+
+    color:
+        rgba(
+            163,
+            232,
+            220,
+            0.58
+        );
+
+    font-size:
+        clamp(
+            11px,
+            1.4vw,
+            14px
+        );
+
+    font-weight: 600;
+
+    letter-spacing: 0.18em;
+
+    white-space: nowrap;
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.45s ease;
+}
+
+
+.wake-hint.hidden {
+    opacity: 0;
+}
+
+
+.wake-dot {
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #72ffe2;
+
+    box-shadow:
+        0 0 12px
+        rgba(
+            114,
+            255,
+            226,
+            0.58
+        );
+
+    animation:
+        wakePulse
+        1.8s
+        infinite;
+}
+
+
+@keyframes wakePulse {
+
+    0%,
+    100% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+/* =====================================================
+   SESSION ACCESS
+
+   SVARĪGI:
+   tagad viss ir radara iekšpusē.
+===================================================== */
+
+.session-access {
+    position: absolute;
+
+    left: 50%;
+
+    /*
+        Radar center = 50%.
+        Radius = ap 40vmin.
+
+        Šis novieto access UI
+        radara apakšējā iekšējā sektorā.
+    */
+    top:
+        calc(
+            50% + 8vmin
+        );
+
+    z-index: 10;
+
+    width:
+        min(
+            380px,
+            42vmin
+        );
+
+    text-align: center;
+
+    /*
+        NAV kustības.
+        Tas vienkārši sākas neredzams.
+    */
+    opacity: 0;
+
+    filter:
+        blur(4px);
+
+    pointer-events: none;
+
+    transform:
+        translateX(-50%);
+
+    transition:
+        opacity 0.7s ease,
+        filter 0.7s ease;
+}
+
+
+/*
+   Fade-in precīzi turpat,
+   kur elements jau atrodas.
+*/
+.session-access.visible {
+    opacity: 1;
+
+    filter:
+        blur(0);
+
+    pointer-events: auto;
+}
+
+
+/* =====================================================
+   ACCESS HEADING
+===================================================== */
+
+.access-heading {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 11px;
+
+    margin-bottom: 5px;
+}
+
+
+.heading-line {
+    width:
+        clamp(
+            24px,
+            4vmin,
+            54px
+        );
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(
+                105,
+                255,
+                226,
+                0.58
+            )
+        );
+}
+
+
+.heading-line:last-child {
     transform:
         scaleX(-1);
 }
 
 
-.panel-header-title {
-    font-size: 11px;
+.heading-text {
+    color:
+        rgba(
+            142,
+            255,
+            233,
+            0.86
+        );
 
-    font-weight: 600;
+    font-size:
+        clamp(
+            10px,
+            1.3vmin,
+            13px
+        );
+
+    font-weight: 700;
 
     letter-spacing: 0.22em;
 
-    color:
-        rgba(174, 255, 239, 0.82);
-
     white-space: nowrap;
+
+    text-shadow:
+        0 0 8px
+        rgba(
+            105,
+            255,
+            226,
+            0.15
+        );
 }
 
 
 /* =====================================================
-   STATUS TEXT
+   SESSION STATUS
 ===================================================== */
 
-.session-status-area {
-    text-align: center;
-
-    min-height: 52px;
-}
-
-
 .session-status {
-    font-size: 17px;
+    min-height: 22px;
+
+    color:
+        rgba(
+            226,
+            255,
+            249,
+            0.95
+        );
+
+    font-size:
+        clamp(
+            14px,
+            1.8vmin,
+            18px
+        );
 
     font-weight: 700;
 
-    letter-spacing: 0.15em;
-
-    color: #dffff8;
+    letter-spacing: 0.08em;
 
     transition:
-        color 0.3s ease,
-        text-shadow 0.3s ease;
+        color 0.25s ease,
+        text-shadow 0.25s ease;
 }
 
 
-.session-status-sub {
-    margin-top: 6px;
+.session-sub-status {
+    margin-top: 2px;
 
-    font-size: 9px;
+    min-height: 13px;
 
-    font-weight: 500;
+    color:
+        rgba(
+            150,
+            211,
+            201,
+            0.46
+        );
+
+    font-size:
+        clamp(
+            8px,
+            1vmin,
+            10px
+        );
+
+    letter-spacing: 0.10em;
+}
+
+
+/* =====================================================
+   SESSION CODE BLOCK
+===================================================== */
+
+.session-code-block {
+    width: 100%;
+
+    margin:
+        9px
+        auto
+        0;
+}
+
+
+.code-field-label {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color:
+        rgba(
+            151,
+            236,
+            220,
+            0.62
+        );
+
+    font-size: 8px;
+
+    font-weight: 700;
 
     letter-spacing: 0.18em;
 
-    color:
-        rgba(150, 218, 207, 0.55);
+    text-align: left;
 }
 
 
-/* Success text glow */
-.session-panel.success
-.session-status {
-    color: #91ffe1;
+/* =====================================================
+   HUD INPUT
+===================================================== */
 
-    text-shadow:
-        0 0 14px
-        rgba(102, 255, 221, 0.55);
+.hud-input-wrap {
+    position: relative;
+
+    width: 100%;
+
+    min-height: 50px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+}
+
+
+/*
+   Augšējā un apakšējā HUD līnija.
+*/
+.hud-input-wrap::before,
+.hud-input-wrap::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(
+                107,
+                255,
+                226,
+                0.24
+            ) 10%,
+            rgba(
+                107,
+                255,
+                226,
+                0.66
+            ) 50%,
+            rgba(
+                107,
+                255,
+                226,
+                0.24
+            ) 90%,
+            transparent
+        );
+}
+
+
+.hud-input-wrap::before {
+    top: 0;
+}
+
+
+.hud-input-wrap::after {
+    bottom: 0;
+}
+
+
+/* =====================================================
+   HUD BRACKETS
+===================================================== */
+
+.hud-bracket {
+    position: absolute;
+
+    top: 50%;
+
+    width: 13px;
+    height: 30px;
+
+    transform:
+        translateY(-50%);
+
+    pointer-events: none;
+}
+
+
+.hud-bracket::before,
+.hud-bracket::after {
+    content: "";
+
+    position: absolute;
+
+    background:
+        rgba(
+            113,
+            255,
+            227,
+            0.82
+        );
+}
+
+
+.hud-bracket-left {
+    left: 0;
+}
+
+
+.hud-bracket-right {
+    right: 0;
+
+    transform:
+        translateY(-50%)
+        scaleX(-1);
+}
+
+
+.hud-bracket::before {
+    left: 0;
+    top: 0;
+
+    width: 13px;
+    height: 1px;
+}
+
+
+.hud-bracket::after {
+    left: 0;
+    top: 0;
+
+    width: 1px;
+    height: 30px;
 }
 
 
@@ -419,350 +1603,557 @@ body {
    INPUT
 ===================================================== */
 
-.input-area {
-    margin-top: 11px;
-}
-
-
 #sessionCodeInput {
-    display: block;
-
     width: 100%;
 
-    height: 48px;
+    height: 50px;
 
     padding:
         0
-        14px;
+        24px;
 
-    border:
-        1px solid
-        rgba(102, 255, 225, 0.26);
+    border: 0;
 
-    outline: none;
-
-    border-radius: 2px;
+    outline: 0;
 
     background:
-        rgba(1, 10, 13, 0.75);
+        rgba(
+            5,
+            20,
+            24,
+            0.12
+        );
 
-    color:
-        #b6fff0;
-
-    text-align: center;
+    color: #a9ffeb;
 
     font-family:
         "Bahnschrift",
         monospace;
 
-    font-size: 20px;
+    font-size:
+        clamp(
+            19px,
+            2.5vmin,
+            27px
+        );
 
     font-weight: 600;
 
-    letter-spacing: 0.32em;
+    letter-spacing: 0.20em;
+
+    text-align: center;
 
     text-transform: uppercase;
 
-    caret-color:
-        #6fffe3;
+    caret-color: #78ffe2;
 
-    transition:
-        border-color 0.25s ease,
-        box-shadow 0.25s ease,
-        background 0.25s ease;
+    touch-action: manipulation;
 }
 
 
 #sessionCodeInput::placeholder {
     color:
-        rgba(131, 201, 190, 0.20);
+        rgba(
+            140,
+            213,
+            200,
+            0.34
+        );
+
+    font-size:
+        clamp(
+            12px,
+            1.5vmin,
+            15px
+        );
+
+    letter-spacing: 0.10em;
 }
 
 
 #sessionCodeInput:focus {
-    border-color:
-        rgba(102, 255, 225, 0.70);
-
     background:
-        rgba(2, 18, 22, 0.90);
+        rgba(
+            9,
+            34,
+            38,
+            0.24
+        );
 
     box-shadow:
-        0 0 18px
-        rgba(61, 255, 218, 0.09);
-}
+        inset 0 0 20px
+        rgba(
+            0,
+            0,
+            0,
+            0.22
+        ),
 
-
-#sessionCodeInput:disabled {
-    opacity: 0.4;
+        0 0 16px
+        rgba(
+            96,
+            255,
+            223,
+            0.08
+        );
 }
 
 
 /* =====================================================
-   PROCESSING INDICATOR
+   INPUT FOCUS LINE
+===================================================== */
+
+.hud-input-line {
+    position: absolute;
+
+    left: 14%;
+    right: 14%;
+
+    bottom: -1px;
+
+    height: 2px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(
+                103,
+                255,
+                226,
+                0.90
+            ),
+            transparent
+        );
+
+    opacity: 0.48;
+
+    transition:
+        opacity 0.25s ease,
+        left 0.25s ease,
+        right 0.25s ease;
+}
+
+
+.hud-input-wrap:focus-within
+.hud-input-line {
+    left: 5%;
+    right: 5%;
+
+    opacity: 1;
+}
+
+
+.tap-instruction {
+    margin-top: 3px;
+
+    color:
+        rgba(
+            155,
+            215,
+            204,
+            0.32
+        );
+
+    font-size: 7px;
+
+    letter-spacing: 0.13em;
+
+    text-align: center;
+}
+
+
+/* =====================================================
+   PROCESSING
 ===================================================== */
 
 .processing-indicator {
+    height: 14px;
+
+    margin-top: 6px;
+
     display: flex;
+
+    align-items: center;
 
     justify-content: center;
 
-    gap: 6px;
-
-    height: 16px;
-
-    margin:
-        13px
-        0
-        7px;
+    gap: 5px;
 
     opacity: 0;
 
     transition:
-        opacity 0.3s ease;
+        opacity 0.25s ease;
 }
 
 
-.session-panel.processing
+.session-access.processing
 .processing-indicator {
     opacity: 1;
 }
 
 
 .processing-indicator span {
-    width: 18px;
+    width:
+        clamp(
+            14px,
+            2.4vmin,
+            22px
+        );
+
     height: 3px;
 
     background:
-        rgba(95, 255, 222, 0.15);
+        rgba(
+            103,
+            255,
+            226,
+            0.12
+        );
 }
 
 
-.session-panel.processing
+.session-access.processing
 .processing-indicator span {
     animation:
-        processingSegment
-        1s
+        processingBar
+        0.9s
         infinite;
 }
 
 
 .processing-indicator span:nth-child(2) {
-    animation-delay: 0.08s;
+    animation-delay: 0.07s;
 }
 
 .processing-indicator span:nth-child(3) {
-    animation-delay: 0.16s;
+    animation-delay: 0.14s;
 }
 
 .processing-indicator span:nth-child(4) {
-    animation-delay: 0.24s;
+    animation-delay: 0.21s;
 }
 
 .processing-indicator span:nth-child(5) {
-    animation-delay: 0.32s;
+    animation-delay: 0.28s;
 }
 
 .processing-indicator span:nth-child(6) {
-    animation-delay: 0.40s;
+    animation-delay: 0.35s;
 }
 
 .processing-indicator span:nth-child(7) {
-    animation-delay: 0.48s;
+    animation-delay: 0.42s;
 }
 
 .processing-indicator span:nth-child(8) {
-    animation-delay: 0.56s;
+    animation-delay: 0.49s;
 }
 
 
-@keyframes processingSegment {
+@keyframes processingBar {
 
     0%,
     100% {
         background:
-            rgba(95, 255, 222, 0.12);
-
-        box-shadow: none;
+            rgba(
+                103,
+                255,
+                226,
+                0.12
+            );
     }
 
     50% {
         background:
-            rgba(95, 255, 222, 0.95);
+            #76ffe1;
 
         box-shadow:
-            0 0 10px
-            rgba(95, 255, 222, 0.45);
+            0 0 9px
+            rgba(
+                103,
+                255,
+                226,
+                0.42
+            );
     }
 }
 
 
 /* =====================================================
-   ENTER BUTTON
+   PROCESSING STATE
 ===================================================== */
 
-.enter-button {
-    position: relative;
+.session-access.processing
+.session-code-block {
+    opacity: 0.30;
 
-    width: 100%;
-    height: 42px;
-
-    border:
-        1px solid
-        rgba(103, 255, 226, 0.45);
-
-    border-radius: 2px;
-
-    background:
-        linear-gradient(
-            180deg,
-            rgba(40, 121, 112, 0.18),
-            rgba(11, 53, 51, 0.22)
-        );
-
-    color:
-        #b9fff1;
-
-    font-family:
-        "Bahnschrift",
-        Arial,
-        sans-serif;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-    letter-spacing: 0.24em;
-
-    cursor: pointer;
-
-    overflow: hidden;
-
-    transition:
-        background 0.25s ease,
-        border-color 0.25s ease,
-        box-shadow 0.25s ease,
-        opacity 0.25s ease;
+    pointer-events: none;
 }
 
 
-.enter-button::before {
-    content: "";
+.session-access.processing
+.confirm-button {
+    opacity: 0.30;
 
-    position: absolute;
+    pointer-events: none;
+}
 
-    top: 0;
-    bottom: 0;
 
-    left: -50%;
+/* =====================================================
+   SUCCESS / DENIED
+===================================================== */
 
-    width: 40%;
+.session-access.success
+.session-status {
+    color: #83ffe0;
+
+    text-shadow:
+        0 0 16px
+        rgba(
+            101,
+            255,
+            222,
+            0.55
+        );
+}
+
+
+.session-access.denied
+.session-status {
+    color: #ffb6a8;
+}
+
+
+/* =====================================================
+   CONFIRM SESSION
+
+   Touch target paliek liels,
+   bet vizuāli nav box.
+===================================================== */
+
+.confirm-button {
+    width: 100%;
+
+    min-height: 50px;
+
+    margin-top: 2px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    border: 0;
+
+    background: transparent;
+
+    color:
+        rgba(
+            190,
+            255,
+            241,
+            0.88
+        );
+
+    font-family: inherit;
+
+    font-size:
+        clamp(
+            10px,
+            1.3vmin,
+            13px
+        );
+
+    font-weight: 700;
+
+    letter-spacing: 0.14em;
+
+    cursor: pointer;
+
+    touch-action: manipulation;
+
+    transition:
+        transform 0.12s ease,
+        color 0.18s ease;
+}
+
+
+.confirm-button:active {
+    transform:
+        scale(0.97);
+
+    color: #7affe1;
+}
+
+
+.confirm-line {
+    flex: 1;
+
+    max-width: 58px;
+
+    height: 1px;
 
     background:
         linear-gradient(
             90deg,
             transparent,
-            rgba(132, 255, 234, 0.14),
-            transparent
+            rgba(
+                105,
+                255,
+                226,
+                0.46
+            )
         );
+}
 
+
+.confirm-line:last-child {
     transform:
-        skewX(-18deg);
-
-    transition:
-        left 0.45s ease;
+        scaleX(-1);
 }
 
 
-.enter-button:hover::before {
-    left: 120%;
+.confirm-text {
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    white-space: nowrap;
 }
 
 
-.enter-button:hover {
-    border-color:
-        rgba(103, 255, 226, 0.85);
+.confirm-icon {
+    color: #72ffe0;
 
-    background:
-        rgba(55, 156, 142, 0.16);
-
-    box-shadow:
-        0 0 18px
-        rgba(73, 255, 221, 0.08);
-}
-
-
-.enter-button:disabled {
-    cursor: default;
-
-    opacity: 0.32;
+    font-size: 15px;
 }
 
 
 /* =====================================================
-   PANEL FOOTER
+   ACCESS FLASH
 ===================================================== */
 
-.panel-footer {
-    margin-top: 12px;
+.access-flash {
+    position: absolute;
 
-    text-align: center;
+    left: 50%;
+    top: 50%;
 
-    font-size: 8px;
+    z-index: 18;
 
-    letter-spacing: 0.20em;
+    width: 0;
+    height: 1px;
 
-    color:
-        rgba(140, 200, 191, 0.33);
+    transform:
+        translate(
+            -50%,
+            -50%
+        );
+
+    background: #87ffe4;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.access-flash.active {
+    animation:
+        accessFlash
+        0.6s
+        ease-out
+        forwards;
+}
+
+
+@keyframes accessFlash {
+
+    0% {
+        width: 0;
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    100% {
+        width: 95vw;
+        opacity: 0;
+    }
 }
 
 
 /* =====================================================
-   APERTURE TRANSITION RING
+   TRANSITION RING
 ===================================================== */
 
 .transition-ring {
     position: absolute;
 
-    top: 50%;
     left: 50%;
+    top: 50%;
 
-    width: 50px;
-    height: 50px;
+    z-index: 20;
 
-    border:
-        1px solid
-        rgba(103, 255, 226, 0.85);
+    width: 60px;
+    height: 60px;
 
     border-radius: 50%;
 
+    border:
+        1px solid
+        rgba(
+            109,
+            255,
+            227,
+            0.90
+        );
+
     transform:
-        translate(-50%, -50%)
+        translate(
+            -50%,
+            -50%
+        )
         scale(0);
 
     opacity: 0;
 
     pointer-events: none;
-
-    z-index: 20;
 }
 
 
 .transition-ring.active {
     animation:
-        apertureRing
-        1.25s
-        cubic-bezier(0.16, 1, 0.3, 1)
+        transitionRing
+        1.15s
+        cubic-bezier(
+            0.16,
+            1,
+            0.3,
+            1
+        )
         forwards;
 }
 
 
-@keyframes apertureRing {
+@keyframes transitionRing {
 
     0% {
         opacity: 0;
 
         transform:
-            translate(-50%, -50%)
+            translate(
+                -50%,
+                -50%
+            )
             scale(0.2);
     }
 
@@ -774,8 +2165,11 @@ body {
         opacity: 0;
 
         transform:
-            translate(-50%, -50%)
-            scale(35);
+            translate(
+                -50%,
+                -50%
+            )
+            scale(36);
     }
 }
 
@@ -786,27 +2180,15 @@ body {
 
 .course-screen {
     position: absolute;
+
     inset: 0;
 
     z-index: 30;
 
-    padding:
-        clamp(24px, 5vw, 64px);
+    overflow: hidden;
 
-    background:
-        radial-gradient(
-            circle at 50% 40%,
-            #12313a 0%,
-            #07191e 52%,
-            #020a0d 100%
-        );
+    background: #031014;
 
-    /*
-        Šis ir mūsu circular aperture.
-
-        Course screen sākas kā 0px aplis
-        tieši radara centrā.
-    */
     clip-path:
         circle(
             0%
@@ -819,8 +2201,13 @@ body {
 
     transition:
         clip-path
-        1.20s
-        cubic-bezier(0.16, 1, 0.3, 1);
+        1.15s
+        cubic-bezier(
+            0.16,
+            1,
+            0.3,
+            1
+        );
 }
 
 
@@ -838,33 +2225,181 @@ body {
 
 
 /* =====================================================
-   COURSE BACKGROUND GRID
+   COURSE BACKGROUND
 ===================================================== */
 
-.course-background-grid {
+.course-console-background {
     position: absolute;
+
     inset: 0;
 
-    pointer-events: none;
+    background:
 
-    opacity: 0.22;
-
-    background-image:
-        linear-gradient(
-            rgba(110, 255, 229, 0.045)
-            1px,
-            transparent 1px
+        radial-gradient(
+            circle at 50% 20%,
+            #10303a 0%,
+            #061b21 50%,
+            #020b0e 100%
         ),
-        linear-gradient(
+
+        repeating-linear-gradient(
             90deg,
-            rgba(110, 255, 229, 0.045)
-            1px,
-            transparent 1px
+            rgba(
+                110,
+                255,
+                229,
+                0.025
+            ) 0,
+            rgba(
+                110,
+                255,
+                229,
+                0.025
+            ) 1px,
+            transparent 1px,
+            transparent 60px
         );
 
-    background-size:
-        48px
-        48px;
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   COURSE TOP BAR
+===================================================== */
+
+.course-system-strip {
+    position: relative;
+
+    z-index: 2;
+
+    min-height: 64px;
+
+    padding:
+        0
+        clamp(
+            28px,
+            5vw,
+            68px
+        );
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    border-bottom:
+        1px solid
+        rgba(
+            110,
+            255,
+            229,
+            0.12
+        );
+
+    background:
+        rgba(
+            2,
+            15,
+            19,
+            0.62
+        );
+}
+
+
+.system-strip-left {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    color:
+        rgba(
+            169,
+            238,
+            226,
+            0.58
+        );
+
+    font-size: 11px;
+
+    letter-spacing: 0.16em;
+}
+
+
+.session-badge {
+    min-height: 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    padding:
+        0
+        15px;
+
+    border:
+        1px solid
+        rgba(
+            109,
+            255,
+            227,
+            0.23
+        );
+
+    background:
+        rgba(
+            20,
+            76,
+            71,
+            0.15
+        );
+
+    color:
+        rgba(
+            183,
+            255,
+            241,
+            0.78
+        );
+
+    font-size: 11px;
+
+    letter-spacing: 0.14em;
+}
+
+
+/* =====================================================
+   COURSE MAIN SHELL
+===================================================== */
+
+.course-shell {
+    position: relative;
+
+    z-index: 2;
+
+    height:
+        calc(
+            100% - 64px
+        );
+
+    padding:
+        clamp(
+            24px,
+            4vw,
+            52px
+        )
+        clamp(
+            28px,
+            5vw,
+            70px
+        );
+
+    overflow-y: auto;
+
+    overscroll-behavior: contain;
 }
 
 
@@ -873,26 +2408,14 @@ body {
 ===================================================== */
 
 .course-header {
-    position: relative;
-
-    z-index: 2;
-
-    display: flex;
-
-    align-items: flex-start;
-
-    justify-content: space-between;
-
-    gap: 30px;
-
     opacity: 0;
 
     transform:
-        translateY(16px);
+        translateY(12px);
 
     transition:
-        opacity 0.7s ease 0.55s,
-        transform 0.7s ease 0.55s;
+        opacity 0.6s ease 0.4s,
+        transform 0.6s ease 0.4s;
 }
 
 
@@ -905,91 +2428,99 @@ body {
 }
 
 
-.course-eyebrow {
-    margin-bottom: 8px;
+.course-label {
+    margin-bottom: 6px;
+
+    color:
+        rgba(
+            110,
+            255,
+            226,
+            0.58
+        );
 
     font-size: 10px;
 
-    font-weight: 600;
+    font-weight: 700;
 
-    letter-spacing: 0.22em;
-
-    color:
-        rgba(114, 255, 226, 0.62);
+    letter-spacing: 0.20em;
 }
 
 
 .course-header h1 {
+    color: #e2fff9;
+
     font-size:
         clamp(
-            28px,
+            32px,
             5vw,
-            52px
+            58px
         );
 
     font-weight: 500;
-
-    letter-spacing:
-        -0.03em;
 }
 
 
-.session-badge {
-    padding:
-        10px
-        14px;
-
-    border:
-        1px solid
-        rgba(109, 255, 226, 0.28);
-
-    background:
-        rgba(18, 75, 71, 0.12);
-
-    font-size: 10px;
-
-    letter-spacing: 0.18em;
+.course-header p {
+    margin-top: 7px;
 
     color:
-        rgba(180, 255, 240, 0.75);
+        rgba(
+            200,
+            232,
+            226,
+            0.52
+        );
+
+    font-size:
+        clamp(
+            14px,
+            1.5vw,
+            17px
+        );
 }
 
 
 /* =====================================================
-   COURSE CONTENT
+   TABLET ACTIVITY GRID
 ===================================================== */
 
-.course-content {
-    position: relative;
+.activity-grid {
+    display: grid;
 
-    z-index: 2;
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
 
-    width:
-        min(
-            760px,
-            100%
+    gap:
+        clamp(
+            14px,
+            2vw,
+            24px
         );
 
     margin-top:
         clamp(
-            55px,
-            9vh,
-            100px
+            28px,
+            5vh,
+            48px
         );
 
     opacity: 0;
 
     transform:
-        translateY(22px);
+        translateY(16px);
 
     transition:
-        opacity 0.75s ease 0.68s,
-        transform 0.75s ease 0.68s;
+        opacity 0.65s ease 0.55s,
+        transform 0.65s ease 0.55s;
 }
 
 
 .course-screen.open
-.course-content {
+.activity-grid {
     opacity: 1;
 
     transform:
@@ -997,203 +2528,478 @@ body {
 }
 
 
-.course-kicker {
-    margin-bottom: 9px;
+/* =====================================================
+   ACTIVITY CARDS
+===================================================== */
 
-    font-size: 10px;
+.activity-card {
+    min-height:
+        clamp(
+            170px,
+            24vh,
+            225px
+        );
 
-    letter-spacing: 0.20em;
+    padding:
+        clamp(
+            18px,
+            2.5vw,
+            28px
+        );
 
-    color:
-        #75ffe2;
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: space-between;
+
+    border:
+        1px solid
+        rgba(
+            110,
+            255,
+            229,
+            0.18
+        );
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(11, 47, 52, 0.76),
+            rgba(3, 20, 24, 0.82)
+        );
+
+    color: #dcfff7;
+
+    text-align: left;
+
+    font-family: inherit;
+
+    cursor: pointer;
+
+    touch-action: manipulation;
+
+    transition:
+        transform 0.12s ease,
+        border-color 0.16s ease,
+        background 0.16s ease;
 }
 
 
-.course-intro h2 {
-    margin-bottom: 8px;
+.activity-card:active {
+    transform:
+        scale(0.982);
+
+    border-color:
+        rgba(
+            107,
+            255,
+            226,
+            0.72
+        );
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 77, 76, 0.86),
+            rgba(5, 30, 34, 0.90)
+        );
+}
+
+
+.activity-top {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+
+.activity-number {
+    color:
+        rgba(
+            105,
+            255,
+            226,
+            0.50
+        );
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.16em;
+}
+
+
+.activity-state {
+    padding:
+        5px
+        8px;
+
+    border:
+        1px solid
+        rgba(
+            102,
+            255,
+            224,
+            0.18
+        );
+
+    color:
+        rgba(
+            129,
+            255,
+            228,
+            0.58
+        );
+
+    font-size: 8px;
+
+    letter-spacing: 0.12em;
+}
+
+
+.activity-content {
+    display: flex;
+
+    align-items: center;
+
+    gap:
+        clamp(
+            15px,
+            2vw,
+            24px
+        );
+
+    margin:
+        18px
+        0;
+}
+
+
+.activity-icon {
+    width:
+        clamp(
+            46px,
+            6vw,
+            62px
+        );
+
+    height:
+        clamp(
+            46px,
+            6vw,
+            62px
+        );
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border:
+        1px solid
+        rgba(
+            104,
+            255,
+            225,
+            0.30
+        );
+
+    background:
+        rgba(
+            13,
+            69,
+            68,
+            0.16
+        );
+
+    color: #79ffe1;
 
     font-size:
         clamp(
-            24px,
-            4vw,
-            40px
+            18px,
+            2.5vw,
+            28px
+        );
+
+    font-weight: 600;
+}
+
+
+.activity-content h2 {
+    color: #e0fff8;
+
+    font-size:
+        clamp(
+            19px,
+            2.3vw,
+            27px
         );
 
     font-weight: 500;
 }
 
 
-.course-intro > p:last-child {
-    max-width: 550px;
+.activity-content p {
+    margin-top: 6px;
 
     color:
-        rgba(203, 236, 230, 0.58);
+        rgba(
+            197,
+            229,
+            223,
+            0.47
+        );
 
-    line-height: 1.6;
-
-    font-size: 14px;
+    font-size:
+        clamp(
+            12px,
+            1.3vw,
+            14px
+        );
 }
 
 
-/* =====================================================
-   COURSE CARDS
-===================================================== */
-
-.course-cards {
-    display: grid;
-
-    gap: 10px;
-
-    margin-top: 34px;
-}
-
-
-.course-card {
+.activity-bottom {
     display: flex;
 
     align-items: center;
 
-    gap: 18px;
+    justify-content: space-between;
 
-    width: 100%;
+    padding-top: 12px;
 
-    min-height: 78px;
-
-    padding:
-        14px
-        18px;
-
-    border:
+    border-top:
         1px solid
-        rgba(105, 255, 226, 0.14);
-
-    background:
-        rgba(3, 21, 25, 0.56);
-
-    color:
-        #dffff8;
-
-    text-align: left;
-
-    cursor: pointer;
-
-    transition:
-        border-color 0.25s ease,
-        background 0.25s ease,
-        transform 0.25s ease;
-}
-
-
-.course-card:hover {
-    border-color:
-        rgba(105, 255, 226, 0.46);
-
-    background:
-        rgba(11, 49, 52, 0.48);
-
-    transform:
-        translateX(5px);
-}
-
-
-.card-number {
-    width: 40px;
-
-    font-size: 11px;
-
-    letter-spacing: 0.16em;
+        rgba(
+            105,
+            255,
+            226,
+            0.08
+        );
 
     color:
-        rgba(105, 255, 226, 0.52);
+        rgba(
+            158,
+            225,
+            213,
+            0.46
+        );
+
+    font-size: 9px;
+
+    letter-spacing: 0.13em;
 }
 
 
-.card-content {
-    display: flex;
-
-    flex: 1;
-
-    flex-direction: column;
-
-    gap: 5px;
-}
-
-
-.card-content strong {
-    font-size: 15px;
-
-    font-weight: 600;
-
-    letter-spacing: 0.04em;
-}
-
-
-.card-content small {
+.activity-arrow {
     color:
-        rgba(197, 230, 224, 0.47);
+        rgba(
+            107,
+            255,
+            226,
+            0.75
+        );
 
-    font-size: 11px;
-}
-
-
-.card-arrow {
-    font-size: 22px;
-
-    color:
-        rgba(113, 255, 226, 0.62);
+    font-size: 24px;
 }
 
 
 /* =====================================================
-   DEMO RESET
+   RESET DEMO
 ===================================================== */
 
 .reset-demo {
-    margin-top: 28px;
+    min-height: 52px;
+
+    margin-top: 25px;
 
     padding:
-        10px
-        14px;
+        0
+        18px;
 
     border:
         1px solid
-        rgba(130, 200, 190, 0.14);
+        rgba(
+            140,
+            205,
+            195,
+            0.13
+        );
 
     background: transparent;
 
     color:
-        rgba(170, 220, 210, 0.35);
+        rgba(
+            174,
+            217,
+            210,
+            0.34
+        );
 
     font-family: inherit;
 
     font-size: 9px;
 
-    letter-spacing: 0.15em;
+    letter-spacing: 0.14em;
 
-    cursor: pointer;
+    touch-action: manipulation;
 }
 
 
 /* =====================================================
-   SMALL / PORTRAIT SCREEN
+   PORTRAIT TABLET
 ===================================================== */
 
 @media (
-    max-width: 700px
+    orientation: portrait
 ) {
 
-    .session-panel {
-        width:
-            min(
-                330px,
-                78vw
-            );
-
-        top: 66%;
+    /*
+        Sānu console bankus portrait režīmā
+        slēpjam, jo tie aizņemtu trainee vietu.
+    */
+    .console-status,
+    .console-bank,
+    .bottom-console {
+        display: none;
     }
 
 
-    .course-header {
-        flex-direction: column;
+    .session-access {
+        /*
+            Joprojām piesaistīts radara centram.
+        */
+        top:
+            calc(
+                50% + 8vmin
+            );
+
+        width:
+            min(
+                430px,
+                66vmin
+            );
+    }
+
+
+    .activity-grid {
+        grid-template-columns:
+            1fr;
+    }
+
+
+    .activity-card {
+        min-height: 150px;
+    }
+}
+
+
+/* =====================================================
+   SHORT SCREEN / ANDROID KEYBOARD
+===================================================== */
+
+@media (
+    max-height: 620px
+) {
+
+    /*
+        Kad keyboard atveras,
+        radars vizuāli kļūst kompaktāks.
+    */
+    .radar-bezel {
+        width: 70vmin;
+    }
+
+
+    .console-bank,
+    .bottom-console {
+        opacity: 0.35;
+    }
+
+
+    /*
+        Session UI paceļam tuvāk centram,
+        lai keyboard to neaizsedz.
+    */
+    .session-access {
+        top:
+            calc(
+                50% + 3vmin
+            );
+
+        width:
+            min(
+                380px,
+                48vw
+            );
+    }
+
+
+    .access-heading {
+        margin-bottom: 2px;
+    }
+
+
+    .session-sub-status {
+        display: none;
+    }
+
+
+    .session-code-block {
+        margin-top: 5px;
+    }
+
+
+    .hud-input-wrap {
+        min-height: 44px;
+    }
+
+
+    #sessionCodeInput {
+        height: 44px;
+
+        font-size: 20px;
+    }
+
+
+    .tap-instruction {
+        display: none;
+    }
+
+
+    .processing-indicator {
+        margin-top: 2px;
+    }
+
+
+    .confirm-button {
+        min-height: 44px;
+
+        margin-top: 0;
+    }
+}
+
+
+/* =====================================================
+   REDUCED MOTION
+===================================================== */
+
+@media (
+    prefers-reduced-motion: reduce
+) {
+
+    .status-light,
+    .bank-led,
+    .micro-led,
+    .bank-button,
+    .wake-dot {
+        animation: none;
     }
 }

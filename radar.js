@@ -14,22 +14,22 @@ const ctx =
 
 
 // ======================================================
-// UI ELEMENTI
+// UI
 // ======================================================
 
-const sessionPanel =
+const radarScreen =
     document.getElementById(
-        "sessionPanel"
+        "radarScreen"
     );
 
-const sessionCodeInput =
+const wakeHint =
     document.getElementById(
-        "sessionCodeInput"
+        "wakeHint"
     );
 
-const enterButton =
+const sessionAccess =
     document.getElementById(
-        "enterButton"
+        "sessionAccess"
     );
 
 const sessionStatus =
@@ -37,9 +37,24 @@ const sessionStatus =
         "sessionStatus"
     );
 
-const sessionStatusSub =
+const sessionSubStatus =
     document.getElementById(
-        "sessionStatusSub"
+        "sessionSubStatus"
+    );
+
+const sessionCodeInput =
+    document.getElementById(
+        "sessionCodeInput"
+    );
+
+const confirmButton =
+    document.getElementById(
+        "confirmButton"
+    );
+
+const accessFlash =
+    document.getElementById(
+        "accessFlash"
     );
 
 const transitionRing =
@@ -52,9 +67,14 @@ const courseScreen =
         "courseScreen"
     );
 
-const activeSessionBadge =
+const courseTitle =
     document.getElementById(
-        "activeSessionBadge"
+        "courseTitle"
+    );
+
+const sessionBadge =
+    document.getElementById(
+        "sessionBadge"
     );
 
 const resetDemoButton =
@@ -64,110 +84,82 @@ const resetDemoButton =
 
 
 // ======================================================
-// DEMO SESSION
+// DEMO SESSIONS
 // ======================================================
 
-// Šis pagaidām ir mūsu fake instructor code.
-//
-// Vēlāk šeit nebūs hard-coded vērtība.
-// Android/native/backend noteiks, vai session ir derīga.
-const DEMO_SESSION_CODE =
-    "482731";
+const demoSessions = {
+
+    "482731": {
+        courseName:
+            "Mathematics"
+    },
+
+    "LATVIA": {
+        courseName:
+            "Latvian Language"
+    },
+
+    "GAS101": {
+        courseName:
+            "GAS BASIC"
+    }
+};
 
 
 // ======================================================
-// ATTĒLI
+// LOGO
 // ======================================================
 
-// Augšējais NOVIKONTAS logo.
-const topImage =
+const logo =
     new Image();
 
-topImage.src =
+logo.src =
     "./assets/logo_navy.png";
 
 
-// Apakšējais attēls.
-const bottomImage =
-    new Image();
-
-bottomImage.src =
-    "./assets/logo_navy.png";
-
-
 // ======================================================
-// RADARA IESTATĪJUMI
+// RADAR SETTINGS
 // ======================================================
 
 let sweepAngle =
     0;
 
 
-// Normālais ātrums.
 const normalSweepSpeed =
     1.22;
 
 
-// Processing laikā
-// needle nedaudz paātrinās.
 let sweepSpeedMultiplier =
     1;
 
 
-// Iepriekšējā frame laiks.
 let previousTime =
     0;
 
 
 // ======================================================
-// AUGŠĒJAIS TARGET
+// LOGO POSITION
 // ======================================================
 
-// 12 o'clock.
-const topTargetAngle =
+const targetAngle =
     -Math.PI / 2;
 
 
-const topDistanceFactor =
-    0.58;
+const targetDistanceFactor =
+    0.48;
 
 
-const topMaxWidth =
-    300;
+const maxLogoWidth =
+    600;
 
 
-const topWidthFactor =
+const logoWidthFactor =
     0.28;
 
 
 // ======================================================
-// APAKŠĒJAIS TARGET
+// DOT STYLE
 // ======================================================
-
-// 6 o'clock.
-const bottomTargetAngle =
-    Math.PI / 2;
-
-
-// Regulē atrašanās vietu.
-const bottomDistanceFactor =
-    0.50;
-
-
-// Regulē izmēru.
-const bottomSizeFactor =
-    1.05;
-
-
-const bottomMaxWidth =
-    420;
-
-
-// ======================================================
-// DOT PARAMETRI
-// ======================================================
-//
-// Abi objekti izmanto vienu stilu.
 
 const dotSpacing =
     5;
@@ -189,10 +181,6 @@ const dotAlphaThreshold =
     45;
 
 
-// ======================================================
-// DOT KRĀSA
-// ======================================================
-
 const dotRed =
     105;
 
@@ -206,7 +194,7 @@ const dotBlue =
 
 
 // ======================================================
-// SCAN PARAMETRI
+// SCAN STYLE
 // ======================================================
 
 const scanPadding =
@@ -217,93 +205,60 @@ const revealFeather =
     0.012;
 
 
-// Cik ilgi pilns objekts
-// paliek redzams.
-const objectHoldTime =
+const logoHoldTime =
     900;
 
 
-// Fade ātrums.
-const objectFadeSpeed =
+const logoFadeSpeed =
     0.52;
 
 
 // ======================================================
-// SAGATAVOTIE TARGET DATI
+// LOGO STATE
 // ======================================================
 
-let topData =
+let logoState =
+    "idle";
+
+
+let logoOpacity =
+    0;
+
+
+let logoHoldUntil =
+    0;
+
+
+let wasScanningLastFrame =
+    false;
+
+
+let currentRevealProgress =
+    0;
+
+
+let scanData =
     null;
 
 
-let bottomData =
-    null;
-
-
 // ======================================================
-// TARGET STATE FACTORY
+// APP STATE
 // ======================================================
 
-function createTargetState() {
-
-    return {
-
-        mode:
-            "idle",
-
-        opacity:
-            0,
-
-        revealProgress:
-            0,
-
-        holdUntil:
-            0,
-
-        wasScanningLastFrame:
-            false,
-
-        completedOnce:
-            false
-    };
-}
-
-
-const topState =
-    createTargetState();
-
-
-const bottomState =
-    createTargetState();
-
-
-// ======================================================
-// SESSION UI STATE
-// ======================================================
-
-// Vai session panelis jau ir parādīts.
-let sessionPanelShown =
+let accessVisible =
     false;
 
 
-// Kad panelis parādās,
-// bottom target vairs neatkārtojas.
-let bottomTargetEnabled =
-    true;
-
-
-// Vai šobrīd apstrādājam kodu.
-let processingSession =
+let processing =
     false;
 
 
-// Vai sākusies pāreja uz course.
-let courseTransitionStarted =
+let transitionStarted =
     false;
 
 
 // ======================================================
-// CANVAS RESIZE
+// RESIZE
 // ======================================================
 
 function resizeCanvas() {
@@ -341,22 +296,12 @@ function resizeCanvas() {
     );
 
 
-    // Pārrēķinām target dot punktus.
     if (
-        topImage.complete &&
-        topImage.naturalWidth
+        logo.complete &&
+        logo.naturalWidth
     ) {
 
-        buildTopData();
-    }
-
-
-    if (
-        bottomImage.complete &&
-        bottomImage.naturalWidth
-    ) {
-
-        buildBottomData();
+        buildLogoScanData();
     }
 }
 
@@ -368,12 +313,10 @@ window.addEventListener(
 
 
 // ======================================================
-// LEŅĶI
+// ANGLE HELPERS
 // ======================================================
 
-function normalizeAngle(
-    angle
-) {
+function normalizeAngle(angle) {
 
     const fullCircle =
         Math.PI *
@@ -424,11 +367,8 @@ function angularDistanceCW(
 
 
 // ======================================================
-// STABILS RANDOM
+// STABLE RANDOM
 // ======================================================
-//
-// Punktu random pozīcijas ir stabilas,
-// tāpēc tie nevibrē katru frame.
 
 function pseudoRandom(
     x,
@@ -437,6 +377,7 @@ function pseudoRandom(
 ) {
 
     const value =
+
         Math.sin(
 
             x *
@@ -449,6 +390,7 @@ function pseudoRandom(
             37.719
 
         ) *
+
         43758.5453;
 
 
@@ -460,7 +402,7 @@ function pseudoRandom(
 
 
 // ======================================================
-// RADARA LAYOUT
+// RADAR LAYOUT
 // ======================================================
 
 function getRadarLayout() {
@@ -474,13 +416,11 @@ function getRadarLayout() {
 
 
     const centerX =
-        width /
-        2;
+        width / 2;
 
 
     const centerY =
-        height /
-        2;
+        height / 2;
 
 
     const radius =
@@ -505,161 +445,103 @@ function getRadarLayout() {
 
 
 // ======================================================
-// TOP BOX
+// LOGO LAYOUT
 // ======================================================
 
-function getTopBox() {
-
-    const layout =
-        getRadarLayout();
-
-
-    const width =
-        Math.min(
-
-            topMaxWidth,
-
-            layout.width *
-            topWidthFactor
-        );
-
-
-    const height =
-        width *
-        (
-            topImage.naturalHeight /
-            topImage.naturalWidth
-        );
-
-
-    const distance =
-        layout.radius *
-        topDistanceFactor;
-
-
-    const centerX =
-        layout.centerX +
-
-        Math.cos(
-            topTargetAngle
-        ) *
-
-        distance;
-
-
-    const centerY =
-        layout.centerY +
-
-        Math.sin(
-            topTargetAngle
-        ) *
-
-        distance;
-
-
-    return {
-
-        x:
-            centerX -
-            width / 2,
-
-        y:
-            centerY -
-            height / 2,
-
-        width,
-        height,
-
-        targetAngle:
-            topTargetAngle
-    };
-}
-
-
-// ======================================================
-// BOTTOM BOX
-// ======================================================
-
-function getBottomBox() {
-
-    const layout =
-        getRadarLayout();
-
-
-    const width =
-        Math.min(
-
-            bottomMaxWidth,
-
-            layout.radius *
-            bottomSizeFactor
-        );
-
-
-    const height =
-        width *
-        (
-            bottomImage.naturalHeight /
-            bottomImage.naturalWidth
-        );
-
-
-    const distance =
-        layout.radius *
-        bottomDistanceFactor;
-
-
-    const centerX =
-        layout.centerX +
-
-        Math.cos(
-            bottomTargetAngle
-        ) *
-
-        distance;
-
-
-    const centerY =
-        layout.centerY +
-
-        Math.sin(
-            bottomTargetAngle
-        ) *
-
-        distance;
-
-
-    return {
-
-        x:
-            centerX -
-            width / 2,
-
-        y:
-            centerY -
-            height / 2,
-
-        width,
-        height,
-
-        targetAngle:
-            bottomTargetAngle
-    };
-}
-
-
-// ======================================================
-// UNIVERSĀLA DOT TARGET IZVEIDE
-// ======================================================
-
-function buildDotTarget(
-    image,
-    box,
-    seedOffset
-) {
+function getLogoLayout() {
 
     const radar =
         getRadarLayout();
+
+
+    const logoWidth =
+        Math.min(
+
+            maxLogoWidth,
+
+            radar.width *
+            logoWidthFactor
+        );
+
+
+    const logoHeight =
+
+        logoWidth *
+
+        (
+            logo.naturalHeight /
+            logo.naturalWidth
+        );
+
+
+    const distance =
+
+        radar.radius *
+
+        targetDistanceFactor;
+
+
+    const logoCenterX =
+
+        radar.centerX +
+
+        Math.cos(
+            targetAngle
+        ) *
+
+        distance;
+
+
+    const logoCenterY =
+
+        radar.centerY +
+
+        Math.sin(
+            targetAngle
+        ) *
+
+        distance;
+
+
+    return {
+
+        radar,
+
+        logoWidth,
+        logoHeight,
+
+        logoX:
+            logoCenterX -
+            logoWidth / 2,
+
+        logoY:
+            logoCenterY -
+            logoHeight / 2
+    };
+}
+
+
+// ======================================================
+// BUILD DOTTED LOGO
+// ======================================================
+
+function buildLogoScanData() {
+
+    if (
+        !logo.complete ||
+        !logo.naturalWidth
+    ) {
+
+        return;
+    }
+
+
+    const layout =
+        getLogoLayout();
+
+
+    const radar =
+        layout.radar;
 
 
     const pixelWidth =
@@ -668,7 +550,7 @@ function buildDotTarget(
             1,
 
             Math.round(
-                box.width
+                layout.logoWidth
             )
         );
 
@@ -679,13 +561,13 @@ function buildDotTarget(
             1,
 
             Math.round(
-                box.height
+                layout.logoHeight
             )
         );
 
 
     // --------------------------------------------------
-    // OFFSCREEN CANVAS
+    // OFFSCREEN SVG RENDER
     // --------------------------------------------------
 
     const sourceCanvas =
@@ -716,7 +598,7 @@ function buildDotTarget(
 
     sourceCtx.drawImage(
 
-        image,
+        logo,
 
         0,
         0,
@@ -742,7 +624,7 @@ function buildDotTarget(
 
 
     // --------------------------------------------------
-    // ATRODAM REĀLO ATTĒLA LEŅĶA ROBEŽU
+    // REAL ANGULAR EXTENT
     // --------------------------------------------------
 
     let minOffset =
@@ -766,20 +648,17 @@ function buildDotTarget(
         ) {
 
             const pixelIndex =
-
                 y *
                 pixelWidth +
                 x;
 
 
             const dataIndex =
-
                 pixelIndex *
                 4;
 
 
             const alpha =
-
                 pixels[
                     dataIndex +
                     3
@@ -797,7 +676,7 @@ function buildDotTarget(
 
             const screenX =
 
-                box.x +
+                layout.logoX +
 
                 (
                     (
@@ -807,12 +686,12 @@ function buildDotTarget(
                     pixelWidth
                 ) *
 
-                box.width;
+                layout.logoWidth;
 
 
             const screenY =
 
-                box.y +
+                layout.logoY +
 
                 (
                     (
@@ -822,7 +701,7 @@ function buildDotTarget(
                     pixelHeight
                 ) *
 
-                box.height;
+                layout.logoHeight;
 
 
             const pixelAngle =
@@ -841,7 +720,7 @@ function buildDotTarget(
 
                     pixelAngle,
 
-                    box.targetAngle
+                    targetAngle
                 );
 
 
@@ -867,13 +746,9 @@ function buildDotTarget(
     }
 
 
-    // --------------------------------------------------
-    // SCAN START / END
-    // --------------------------------------------------
-
     const scanStartAngle =
 
-        box.targetAngle +
+        targetAngle +
 
         minOffset -
 
@@ -882,7 +757,7 @@ function buildDotTarget(
 
     const scanEndAngle =
 
-        box.targetAngle +
+        targetAngle +
 
         maxOffset +
 
@@ -899,7 +774,7 @@ function buildDotTarget(
 
 
     // --------------------------------------------------
-    // DOTS
+    // DOT GENERATION
     // --------------------------------------------------
 
     const dots =
@@ -923,8 +798,6 @@ function buildDotTarget(
 
                     gridX,
                     gridY,
-
-                    seedOffset +
                     1
                 );
 
@@ -934,8 +807,6 @@ function buildDotTarget(
 
                     gridX,
                     gridY,
-
-                    seedOffset +
                     2
                 );
 
@@ -992,20 +863,17 @@ function buildDotTarget(
 
 
             const pixelIndex =
-
                 y *
                 pixelWidth +
                 x;
 
 
             const dataIndex =
-
                 pixelIndex *
                 4;
 
 
             const alpha =
-
                 pixels[
                     dataIndex +
                     3
@@ -1023,7 +891,7 @@ function buildDotTarget(
 
             const screenX =
 
-                box.x +
+                layout.logoX +
 
                 (
                     (
@@ -1033,12 +901,12 @@ function buildDotTarget(
                     pixelWidth
                 ) *
 
-                box.width;
+                layout.logoWidth;
 
 
             const screenY =
 
-                box.y +
+                layout.logoY +
 
                 (
                     (
@@ -1048,7 +916,7 @@ function buildDotTarget(
                     pixelHeight
                 ) *
 
-                box.height;
+                layout.logoHeight;
 
 
             const dotAngle =
@@ -1073,22 +941,16 @@ function buildDotTarget(
 
             const sizeRandom =
                 pseudoRandom(
-
                     x,
                     y,
-
-                    seedOffset +
                     3
                 );
 
 
             const brightnessRandom =
                 pseudoRandom(
-
                     x,
                     y,
-
-                    seedOffset +
                     4
                 );
 
@@ -1133,7 +995,7 @@ function buildDotTarget(
     }
 
 
-    return {
+    scanData = {
 
         dots,
 
@@ -1147,67 +1009,15 @@ function buildDotTarget(
 
 
 // ======================================================
-// BUILD TARGETS
+// UPDATE LOGO
 // ======================================================
 
-function buildTopData() {
-
-    if (
-        !topImage.complete ||
-        !topImage.naturalWidth
-    ) {
-
-        return;
-    }
-
-
-    topData =
-        buildDotTarget(
-
-            topImage,
-
-            getTopBox(),
-
-            10
-        );
-}
-
-
-function buildBottomData() {
-
-    if (
-        !bottomImage.complete ||
-        !bottomImage.naturalWidth
-    ) {
-
-        return;
-    }
-
-
-    bottomData =
-        buildDotTarget(
-
-            bottomImage,
-
-            getBottomBox(),
-
-            30
-        );
-}
-
-
-// ======================================================
-// TARGET UPDATE
-// ======================================================
-
-function updateTarget(
-    targetData,
-    state,
+function updateLogoScan(
     currentTime,
     deltaTime
 ) {
 
-    if (!targetData) {
+    if (!scanData) {
 
         return;
     }
@@ -1216,7 +1026,7 @@ function updateTarget(
     const sweepProgress =
         angularDistanceCW(
 
-            targetData.scanStartAngle,
+            scanData.scanStartAngle,
 
             sweepAngle
         );
@@ -1226,7 +1036,7 @@ function updateTarget(
 
         sweepProgress <=
 
-        targetData.totalScanSpan;
+        scanData.totalScanSpan;
 
 
     // --------------------------------------------------
@@ -1236,28 +1046,28 @@ function updateTarget(
     if (isScanning) {
 
         if (
-            !state.wasScanningLastFrame
+            !wasScanningLastFrame
         ) {
 
-            state.mode =
+            logoState =
                 "scanning";
 
 
-            state.opacity =
+            logoOpacity =
                 1;
 
 
-            state.revealProgress =
+            currentRevealProgress =
                 0;
         }
 
 
-        state.revealProgress =
+        currentRevealProgress =
             Math.min(
 
                 sweepProgress,
 
-                targetData.totalScanSpan
+                scanData.totalScanSpan
             );
     }
 
@@ -1269,96 +1079,89 @@ function updateTarget(
     else {
 
         if (
-            state.wasScanningLastFrame &&
-            state.mode ===
+            wasScanningLastFrame &&
+            logoState ===
             "scanning"
         ) {
 
-            state.revealProgress =
-                targetData.totalScanSpan;
+            currentRevealProgress =
+                scanData.totalScanSpan;
 
 
-            state.mode =
+            logoState =
                 "holding";
 
 
-            state.opacity =
+            logoOpacity =
                 1;
 
 
-            state.holdUntil =
+            logoHoldUntil =
                 currentTime +
-                objectHoldTime;
+                logoHoldTime;
         }
 
 
         if (
-            state.mode ===
+            logoState ===
             "holding" &&
             currentTime >
-            state.holdUntil
+            logoHoldUntil
         ) {
 
-            state.mode =
+            logoState =
                 "fading";
         }
 
 
         if (
-            state.mode ===
+            logoState ===
             "fading"
         ) {
 
-            state.opacity -=
+            logoOpacity -=
 
-                objectFadeSpeed *
+                logoFadeSpeed *
+
                 deltaTime;
 
 
             if (
-                state.opacity <=
+                logoOpacity <=
                 0
             ) {
 
-                state.opacity =
+                logoOpacity =
                     0;
 
 
-                state.mode =
+                logoState =
                     "idle";
 
 
-                state.revealProgress =
+                currentRevealProgress =
                     0;
-
-
-                // Svarīgi session panel loģikai.
-                state.completedOnce =
-                    true;
             }
         }
     }
 
 
-    state.wasScanningLastFrame =
+    wasScanningLastFrame =
         isScanning;
 }
 
 
 // ======================================================
-// TARGET DRAW
+// DRAW LOGO
 // ======================================================
 
-function drawDotTarget(
-    targetData,
-    state
-) {
+function drawDotLogo() {
 
     if (
-        !targetData ||
-        state.mode ===
+        !scanData ||
+        logoState ===
         "idle" ||
-        state.opacity <=
+        logoOpacity <=
         0
     ) {
 
@@ -1379,12 +1182,12 @@ function drawDotTarget(
 
     for (
         const dot of
-        targetData.dots
+        scanData.dots
     ) {
 
         const distanceBehindNeedle =
 
-            state.revealProgress -
+            currentRevealProgress -
 
             dot.revealProgress;
 
@@ -1438,7 +1241,7 @@ function drawDotTarget(
 
             dot.brightness *
 
-            state.opacity;
+            logoOpacity;
 
 
         ctx.beginPath();
@@ -1478,137 +1281,93 @@ function drawDotTarget(
 
 
 // ======================================================
-// SESSION PANEL
+// SHOW SESSION ACCESS
 // ======================================================
 
-function showSessionPanel() {
+function showSessionAccess() {
 
     if (
-        sessionPanelShown
+        accessVisible ||
+        processing ||
+        transitionStarted
     ) {
 
         return;
     }
 
 
-    sessionPanelShown =
+    accessVisible =
         true;
 
 
-    // Bottom logo vairs neatkārtojas.
-    bottomTargetEnabled =
-        false;
+    wakeHint.classList.add(
+        "hidden"
+    );
 
 
-    sessionPanel.classList.add(
+    sessionAccess.classList.add(
         "visible"
     );
-
-
-    // Input vēl nefokusējam automātiski,
-    // lai Android keyboard pats neuzlec.
 }
 
 
 // ======================================================
-// RESET SESSION PANEL
-// ======================================================
-
-function resetSessionPanel() {
-
-    processingSession =
-        false;
-
-
-    sweepSpeedMultiplier =
-        1;
-
-
-    sessionPanel.classList.remove(
-        "processing",
-        "success",
-        "denied"
-    );
-
-
-    sessionStatus.textContent =
-        "ENTER SESSION CODE";
-
-
-    sessionStatusSub.textContent =
-        "INSTRUCTOR ACCESS KEY REQUIRED";
-
-
-    sessionCodeInput.disabled =
-        false;
-
-
-    enterButton.disabled =
-        false;
-
-
-    sessionCodeInput.value =
-        "";
-
-
-    sessionCodeInput.focus();
-}
-
-
-// ======================================================
-// PROCESS SESSION CODE
+// PROCESS SESSION
 // ======================================================
 
 function processSessionCode() {
 
     if (
-        processingSession ||
-        courseTransitionStarted
+        processing ||
+        transitionStarted
     ) {
 
         return;
     }
 
 
-    const enteredCode =
+    const code =
         sessionCodeInput.value
             .trim()
             .toUpperCase();
 
 
-    // Nekas nav ievadīts.
-    if (!enteredCode) {
+    // --------------------------------------------------
+    // EMPTY
+    // --------------------------------------------------
 
-        sessionPanel.classList.add(
+    if (!code) {
+
+        sessionAccess.classList.add(
             "denied"
         );
 
 
         sessionStatus.textContent =
-            "CODE REQUIRED";
+            "SESSION CODE REQUIRED";
 
 
-        sessionStatusSub.textContent =
-            "ENTER THE INSTRUCTOR SESSION KEY";
+        sessionSubStatus.textContent =
+            "TAP THE CODE FIELD AND ENTER YOUR SESSION KEY";
 
 
         setTimeout(
             () => {
 
-                sessionPanel.classList.remove(
+                sessionAccess.classList.remove(
                     "denied"
                 );
 
 
                 sessionStatus.textContent =
-                    "ENTER SESSION CODE";
+                    "ENTER INSTRUCTOR CODE";
 
 
-                sessionStatusSub.textContent =
-                    "INSTRUCTOR ACCESS KEY REQUIRED";
+                sessionSubStatus.textContent =
+                    "USE THE SESSION KEY PROVIDED BY YOUR INSTRUCTOR";
 
             },
-            900
+            1200
         );
 
 
@@ -1616,89 +1375,103 @@ function processSessionCode() {
     }
 
 
-    processingSession =
+    // --------------------------------------------------
+    // PROCESSING
+    // --------------------------------------------------
+
+    processing =
         true;
-
-
-    // Nedaudz paātrinām radar sweep.
-    sweepSpeedMultiplier =
-        1.28;
 
 
     sessionCodeInput.disabled =
         true;
 
 
-    enterButton.disabled =
+    confirmButton.disabled =
         true;
 
 
-    sessionPanel.classList.add(
+    sessionAccess.classList.add(
         "processing"
     );
 
 
     sessionStatus.textContent =
-        "PROCESSING SESSION CODE";
+        "PROCESSING SESSION";
 
 
-    sessionStatusSub.textContent =
+    sessionSubStatus.textContent =
         "VALIDATING ACCESS KEY";
 
 
+    sweepSpeedMultiplier =
+        1.25;
+
+
     // --------------------------------------------------
-    // 1.2 SEK
+    // 1.1 SEC
     // --------------------------------------------------
 
     setTimeout(
         () => {
 
-            if (
-                enteredCode ===
-                DEMO_SESSION_CODE
-            ) {
+            const session =
+                demoSessions[
+                    code
+                ];
+
+
+            if (session) {
 
                 sessionStatus.textContent =
                     "CODE VERIFIED";
 
 
-                sessionStatusSub.textContent =
-                    "SESSION IDENTIFIED";
+                sessionSubStatus.textContent =
+                    session.courseName
+                        .toUpperCase();
             }
 
             else {
 
                 sessionStatus.textContent =
-                    "ACCESS KEY NOT RECOGNISED";
+                    "CODE NOT RECOGNISED";
 
 
-                sessionStatusSub.textContent =
+                sessionSubStatus.textContent =
                     "SESSION VALIDATION FAILED";
             }
 
         },
-        1200
+        1100
     );
 
 
     // --------------------------------------------------
-    // 2 SEK
+    // 2 SEC
     // --------------------------------------------------
 
     setTimeout(
         () => {
 
-            if (
-                enteredCode ===
-                DEMO_SESSION_CODE
-            ) {
+            const session =
+                demoSessions[
+                    code
+                ];
 
-                sessionPanel.classList.remove(
+
+            // ==========================================
+            // SUCCESS
+            // ==========================================
+
+            if (session) {
+
+                sessionAccess.classList.remove(
                     "processing"
                 );
 
 
-                sessionPanel.classList.add(
+                sessionAccess.classList.add(
                     "success"
                 );
 
@@ -1707,43 +1480,51 @@ function processSessionCode() {
                     "ACCESS GRANTED";
 
 
-                sessionStatusSub.textContent =
-                    "TRAINING SESSION READY";
+                sessionSubStatus.textContent =
+                    session.courseName
+                        .toUpperCase();
 
 
-                // Īss needle boost pirms transition.
                 sweepSpeedMultiplier =
-                    1.5;
+                    1.45;
 
 
-                // Parādām session kodu fake course page.
-                activeSessionBadge.textContent =
-                    `SESSION ${enteredCode}`;
+                courseTitle.textContent =
+                    session.courseName;
 
 
-                // Nedaudz vēlāk sākam page transition.
+                sessionBadge.textContent =
+                    `SESSION ${code}`;
+
+
+                accessFlash.classList.add(
+                    "active"
+                );
+
+
                 setTimeout(
                     () => {
 
                         beginCourseTransition();
 
                     },
-                    650
+                    700
                 );
             }
 
+
+            // ==========================================
+            // DENIED
+            // ==========================================
+
             else {
 
-                // --------------------------------------------------
-                // ACCESS DENIED
-                // --------------------------------------------------
-
-                sessionPanel.classList.remove(
+                sessionAccess.classList.remove(
                     "processing"
                 );
 
 
-                sessionPanel.classList.add(
+                sessionAccess.classList.add(
                     "denied"
                 );
 
@@ -1752,7 +1533,7 @@ function processSessionCode() {
                     "ACCESS DENIED";
 
 
-                sessionStatusSub.textContent =
+                sessionSubStatus.textContent =
                     "CHECK SESSION CODE";
 
 
@@ -1760,11 +1541,10 @@ function processSessionCode() {
                     1;
 
 
-                // Pēc brīža dodam vēl vienu mēģinājumu.
                 setTimeout(
                     () => {
 
-                        resetSessionPanel();
+                        resetSessionEntry();
 
                     },
                     1400
@@ -1778,46 +1558,88 @@ function processSessionCode() {
 
 
 // ======================================================
+// RESET ENTRY
+// ======================================================
+
+function resetSessionEntry() {
+
+    processing =
+        false;
+
+
+    sessionAccess.classList.remove(
+        "processing",
+        "success",
+        "denied"
+    );
+
+
+    sessionStatus.textContent =
+        "ENTER INSTRUCTOR CODE";
+
+
+    sessionSubStatus.textContent =
+        "USE THE SESSION KEY PROVIDED BY YOUR INSTRUCTOR";
+
+
+    sessionCodeInput.disabled =
+        false;
+
+
+    confirmButton.disabled =
+        false;
+
+
+    sessionCodeInput.value =
+        "";
+
+
+    sessionCodeInput.focus();
+}
+
+
+// ======================================================
 // COURSE TRANSITION
 // ======================================================
 
 function beginCourseTransition() {
 
     if (
-        courseTransitionStarted
+        transitionStarted
     ) {
 
         return;
     }
 
 
-    courseTransitionStarted =
+    transitionStarted =
         true;
 
 
-    // Circular ring no radara centra.
+    sessionAccess.style.opacity =
+        "0";
+
+
+    sessionAccess.style.pointerEvents =
+        "none";
+
+
     transitionRing.classList.add(
         "active"
     );
 
 
-    // Atveram course screen ar circle clip-path.
-    courseScreen.classList.add(
-        "open"
+    requestAnimationFrame(
+        () => {
+
+            courseScreen.classList.add(
+                "open"
+            );
+
+        }
     );
 
 
-    // Session panelis mazliet izdziest.
-    sessionPanel.style.opacity =
-        "0";
-
-
-    sessionPanel.style.pointerEvents =
-        "none";
-
-
-    // Kad transition pabeigts,
-    // atgriežam normālu sweep ātrumu.
     setTimeout(
         () => {
 
@@ -1831,17 +1653,43 @@ function beginCourseTransition() {
 
 
 // ======================================================
-// UI EVENTI
+// EVENTS
 // ======================================================
 
-// Enter button.
-enterButton.addEventListener(
-    "click",
-    processSessionCode
+// Touch uz sākuma screen.
+radarScreen.addEventListener(
+    "pointerdown",
+    () => {
+
+        showSessionAccess();
+    }
 );
 
 
-// Keyboard Enter.
+// Confirm button.
+confirmButton.addEventListener(
+    "click",
+    event => {
+
+        // Neļaujam pointer eventam darīt neko papildus.
+        event.stopPropagation();
+
+        processSessionCode();
+    }
+);
+
+
+// Input click nepārslēdz screen state.
+sessionCodeInput.addEventListener(
+    "pointerdown",
+    event => {
+
+        event.stopPropagation();
+    }
+);
+
+
+// Keyboard Enter / Android Go.
 sessionCodeInput.addEventListener(
     "keydown",
     event => {
@@ -1851,13 +1699,15 @@ sessionCodeInput.addEventListener(
             "Enter"
         ) {
 
+            event.preventDefault();
+
             processSessionCode();
         }
     }
 );
 
 
-// Automātiski lielie burti.
+// Uppercase.
 sessionCodeInput.addEventListener(
     "input",
     () => {
@@ -1869,19 +1719,18 @@ sessionCodeInput.addEventListener(
 );
 
 
-// Demo reset.
+// Reset prototype.
 resetDemoButton.addEventListener(
     "click",
     () => {
 
-        // Eksperimentam vienkāršākais restart.
         window.location.reload();
     }
 );
 
 
 // ======================================================
-// RADARA DRAW
+// DRAW RADAR
 // ======================================================
 
 function drawRadar() {
@@ -1898,23 +1747,18 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // ĀRĒJAIS APLIS
+    // OUTER RING
     // --------------------------------------------------
 
     ctx.beginPath();
 
 
     ctx.arc(
-
         centerX,
         centerY,
-
         radius,
-
         0,
-
-        Math.PI *
-        2
+        Math.PI * 2
     );
 
 
@@ -1930,7 +1774,7 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // IEKŠĒJIE APĻI
+    // INNER RINGS
     // --------------------------------------------------
 
     const ringCount =
@@ -1957,16 +1801,11 @@ function drawRadar() {
 
 
         ctx.arc(
-
             centerX,
             centerY,
-
             ringRadius,
-
             0,
-
-            Math.PI *
-            2
+            Math.PI * 2
         );
 
 
@@ -1983,26 +1822,22 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // KRUSTA LĪNIJAS
+    // HORIZONTAL
     // --------------------------------------------------
 
     ctx.beginPath();
 
 
     ctx.moveTo(
-
         centerX -
         radius,
-
         centerY
     );
 
 
     ctx.lineTo(
-
         centerX +
         radius,
-
         centerY
     );
 
@@ -2014,22 +1849,22 @@ function drawRadar() {
     ctx.stroke();
 
 
+    // --------------------------------------------------
+    // VERTICAL
+    // --------------------------------------------------
+
     ctx.beginPath();
 
 
     ctx.moveTo(
-
         centerX,
-
         centerY -
         radius
     );
 
 
     ctx.lineTo(
-
         centerX,
-
         centerY +
         radius
     );
@@ -2043,7 +1878,7 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // SWEEP GLOW SEKTORS
+    // SWEEP SECTOR
     // --------------------------------------------------
 
     ctx.save();
@@ -2059,17 +1894,12 @@ function drawRadar() {
 
 
     ctx.arc(
-
         centerX,
         centerY,
-
         radius,
-
         sweepAngle -
         0.40,
-
         sweepAngle,
-
         false
     );
 
@@ -2079,11 +1909,9 @@ function drawRadar() {
 
     const sectorGradient =
         ctx.createRadialGradient(
-
             centerX,
             centerY,
             0,
-
             centerX,
             centerY,
             radius
@@ -2091,25 +1919,19 @@ function drawRadar() {
 
 
     sectorGradient.addColorStop(
-
         0,
-
         "rgba(100, 255, 230, 0.22)"
     );
 
 
     sectorGradient.addColorStop(
-
         0.65,
-
         "rgba(100, 255, 230, 0.08)"
     );
 
 
     sectorGradient.addColorStop(
-
         1,
-
         "rgba(100, 255, 230, 0.015)"
     );
 
@@ -2125,59 +1947,14 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // DOT TARGETS
+    // DOTTED LOGO
     // --------------------------------------------------
 
-    ctx.save();
-
-
-    // Neļaujam dot attēliem iziet ārpus radara.
-    ctx.beginPath();
-
-
-    ctx.arc(
-
-        centerX,
-        centerY,
-
-        radius -
-        2,
-
-        0,
-
-        Math.PI *
-        2
-    );
-
-
-    ctx.clip();
-
-
-    // Top turpina ciklot arī tad,
-    // kad session panel ir redzams.
-    drawDotTarget(
-        topData,
-        topState
-    );
-
-
-    // Bottom tikai pirms session panel.
-    if (
-        bottomTargetEnabled
-    ) {
-
-        drawDotTarget(
-            bottomData,
-            bottomState
-        );
-    }
-
-
-    ctx.restore();
+    drawDotLogo();
 
 
     // --------------------------------------------------
-    // NEEDLE TRAIL
+    // TRAIL
     // --------------------------------------------------
 
     const trailLines =
@@ -2249,7 +2026,6 @@ function drawRadar() {
 
 
         ctx.strokeStyle =
-
             `rgba(
                 85,
                 255,
@@ -2267,7 +2043,7 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // NEEDLE
+    // MAIN NEEDLE
     // --------------------------------------------------
 
     const sweepX =
@@ -2294,27 +2070,21 @@ function drawRadar() {
 
     const sweepGradient =
         ctx.createLinearGradient(
-
             centerX,
             centerY,
-
             sweepX,
             sweepY
         );
 
 
     sweepGradient.addColorStop(
-
         0,
-
         "rgba(110, 255, 230, 0.18)"
     );
 
 
     sweepGradient.addColorStop(
-
         1,
-
         "rgba(110, 255, 230, 1)"
     );
 
@@ -2346,23 +2116,18 @@ function drawRadar() {
 
 
     // --------------------------------------------------
-    // CENTRA PUNKTS
+    // CENTER
     // --------------------------------------------------
 
     ctx.beginPath();
 
 
     ctx.arc(
-
         centerX,
         centerY,
-
         5,
-
         0,
-
-        Math.PI *
-        2
+        Math.PI * 2
     );
 
 
@@ -2378,9 +2143,7 @@ function drawRadar() {
 // MAIN ANIMATION
 // ======================================================
 
-function animate(
-    currentTime
-) {
+function animate(currentTime) {
 
     if (!previousTime) {
 
@@ -2403,10 +2166,6 @@ function animate(
         currentTime;
 
 
-    // --------------------------------------------------
-    // NEEDLE KUSTĪBA
-    // --------------------------------------------------
-
     sweepAngle +=
 
         normalSweepSpeed *
@@ -2428,78 +2187,19 @@ function animate(
     }
 
 
-    // --------------------------------------------------
-    // TOP TARGET
-    // --------------------------------------------------
-
-    updateTarget(
-
-        topData,
-
-        topState,
-
+    updateLogoScan(
         currentTime,
-
         deltaTime
     );
 
 
-    // --------------------------------------------------
-    // BOTTOM TARGET
-    // --------------------------------------------------
-
-    if (
-        bottomTargetEnabled
-    ) {
-
-        updateTarget(
-
-            bottomData,
-
-            bottomState,
-
-            currentTime,
-
-            deltaTime
-        );
-
-
-        // Kad bottom pirmo reizi:
-        //
-        // scan ->
-        // full ->
-        // fade ->
-        // pazuda
-        //
-        // tad parādām SESSION ACCESS.
-        if (
-            bottomState.completedOnce &&
-            !sessionPanelShown
-        ) {
-
-            showSessionPanel();
-        }
-    }
-
-
-    // --------------------------------------------------
-    // CLEAR
-    // --------------------------------------------------
-
     ctx.clearRect(
-
         0,
         0,
-
         window.innerWidth,
-
         window.innerHeight
     );
 
-
-    // --------------------------------------------------
-    // DRAW
-    // --------------------------------------------------
 
     drawRadar();
 
@@ -2511,20 +2211,13 @@ function animate(
 
 
 // ======================================================
-// IMAGE LOAD
+// LOAD
 // ======================================================
 
-topImage.onload =
+logo.onload =
     function () {
 
-        buildTopData();
-    };
-
-
-bottomImage.onload =
-    function () {
-
-        buildBottomData();
+        buildLogoScanData();
     };
 
 
@@ -2533,7 +2226,6 @@ bottomImage.onload =
 // ======================================================
 
 resizeCanvas();
-
 
 requestAnimationFrame(
     animate
