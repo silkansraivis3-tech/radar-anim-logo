@@ -1,0 +1,32 @@
+/* Noņem browser noklusējuma atstarpes */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Visa lapa aizņem visu ekrānu */
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Tumšs maritime/radar background */
+body {
+    background:
+        radial-gradient(
+            circle at center,
+            #102b35 0%,
+            #07171d 55%,
+            #02090c 100%
+        );
+}
+
+/* Canvas aizņem visu ekrānu */
+#radarCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
