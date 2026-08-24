@@ -130,7 +130,7 @@ const normalSweepSpeed =
 
 
 let sweepSpeedMultiplier =
-    1;
+    1.15;
 
 
 let previousTime =
